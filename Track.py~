@@ -48,4 +48,4 @@ if __name__ == "__main__":
     """
     test = Track("C:\\Users\\LENOVO\\Desktop\\TEFLON DON.mp3")
     print(test.get_metadata())
-
+    
