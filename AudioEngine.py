@@ -5,11 +5,6 @@ from tkinter import filedialog
 # Initialize pygame mixer
 pygame.mixer.init()
 
-# Initialize the main window : khoi tao cua so
-root = Tk()
-root.title('MP3-Player')
-root.geometry("500x400")
-
 # Define the AudioEngine class : xac dinh lop
 class AudioEngine:
     def __init__(self):
@@ -92,6 +87,10 @@ class AudioEngine:
         pygame.mixer.music.set_volume(float(volume) / 100)
 # Ham main test thoi
 if __name__ == '__main__':
+    # Initialize the main window : khoi tao cua so
+    root = Tk()
+    root.title('MP3-Player')
+    root.geometry("500x400")
     # Create the listbox to display songs
     song_box = Listbox(root, bg='black', fg='green', width=60, selectbackground='gray', selectforeground='black')
     song_box.pack(pady=20)
