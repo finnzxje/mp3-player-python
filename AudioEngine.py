@@ -9,7 +9,6 @@ class AudioEngine:
         self.current_audio = None  # Placeholder for storing the current audio file
         self.last_volume = 1.0  # Store audio before muting
         pygame.mixer.music.set_volume(0.5)  # Set initial volume to 50%
-        self.audio_files = []  # List to store the full paths of audio files
 
     def load_audio(self, current_audio):
         """"
