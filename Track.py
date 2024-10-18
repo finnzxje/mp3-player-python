@@ -1,6 +1,8 @@
 from mutagen.id3 import ID3NoHeaderError
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
+
+
 class Track:
     def __init__(self, file_path):
         """"
@@ -42,10 +44,21 @@ class Track:
             "file_path": self.file_path
         }
 
+    def get_path(self):
+        """"
+        Return the file path of the track
+        """
+        return self.file_path
+
+    def __str__(self):
+        """
+        Return the title of the track
+        """
+        return self.title
+
 if __name__ == "__main__":
     """"
     Test the Track class with local file path
     """
     test = Track("C:\\Users\\LENOVO\\Desktop\\TEFLON DON.mp3")
     print(test.get_metadata())
-

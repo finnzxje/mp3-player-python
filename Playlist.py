@@ -3,6 +3,7 @@ from Track import Track
 from tkinter import filedialog
 from tkinter import *
 
+
 class Playlist:
     def __init__(self):
         """"
@@ -15,7 +16,6 @@ class Playlist:
         Add a track to the playlist
         """
         self.tracks.append(track)
-
 
     def remove_track(self, track):
         """"
@@ -35,6 +35,16 @@ class Playlist:
         """
         random.shuffle(self.tracks)
 
+    def __len__(self):
+        """"
+        Get the number of tracks in the playlist
+        """
+        return len(self.tracks)
+
+    def get_track(self, position):
+        return self.tracks[position]
+
+
 if __name__ == "__main__":
     """"
     Test the Playlist class
@@ -50,7 +60,7 @@ if __name__ == "__main__":
         choice = int(input("Enter your choice: "))
         if choice == 1:
             file_track = filedialog.askopenfilename(initialdir='C:/Users/LENOVO/Desktop',
-                                      title="Choose A Song", filetypes=(("mp3 Files", "*.mp3"), ))
+                                                    title="Choose A Song", filetypes=(("mp3 Files", "*.mp3"),))
             test.add_track(file_track)
         elif choice == 2:
             file_track = Track(input("Enter the file path of the track: "))
