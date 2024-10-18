@@ -75,6 +75,8 @@ class MusicPlayer:
         """
         self.index = 0
         self.playlist.shuffle()
+        self.current_track = self.playlist.tracks[self.index]
+        self.play()
 
     def set_volume(self, volume):
         """
@@ -130,7 +132,7 @@ if __name__ == "__main__":
     """
     tk = Tk()
     music_player = MusicPlayer()
- #   music_player.add_track_from_files(["C:\\Users\\LENOVO\\Desktop\\TEFLON DON.mp3"])
+#    music_player.add_track_from_files(["C:\\Users\\LENOVO\\Desktop\\TEFLON DON.mp3"])
     while True:
         print("Enter 1 for playing")
         print("Enter 2 for pausing")
