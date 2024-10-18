@@ -2,10 +2,12 @@ import pygame
 from tkinter import *
 from tkinter import filedialog
 
+
 class AudioEngine:
     def __init__(self):
+        pygame.mixer.init()
         self.current_audio = None  # Placeholder for storing the current audio file
-        self.last_volume = 1.0 # Store audio before muting
+        self.last_volume = 1.0  # Store audio before muting
         pygame.mixer.music.set_volume(0.5)  # Set initial volume to 50%
         self.audio_files = []  # List to store the full paths of audio files
 
@@ -13,30 +15,29 @@ class AudioEngine:
         """"
         Function to load a single audio file
         """
-        song = current_audio.split('/')[-1]  # For Unix/Linux/Mac
-        # song = self.current_audio.split('\\')[-1]  # For Windows
-        song_name = song.replace('.mp3', '')
-        return song_name
+        self.current_audio = current_audio
+        pygame.mixer.music.load(current_audio)
 
     def start_playback(self):
-        selected_index = song_box.curselection()
-        if selected_index:
-            current_audio_path = self.audio_files[selected_index[0]]
-            print(f"Attempting to play: {current_audio_path}")  # Add this line for debugging
-            try:
-                pygame.mixer.music.load(current_audio_path)
-                pygame.mixer.music.play(loops=0)
-                print(f"Now playing: {song_box.get(selected_index)}")
-            except pygame.error as e:
-                print(f"Error playing {current_audio_path}: {e}")
-        else:
-            print("No song selected")
+        """"
+        Function to start the music
+        """
+        pygame.mixer.music.play()
 
     def stop_playback(self):
         """"
         Function to stop the music
         """
         pygame.mixer.music.stop()
+
+    def pause_playback(self, action):
+        """"
+        Function to pause and unpause the music
+        """
+        if action:
+            pygame.mixer.music.pause()
+        else:
+            pygame.mixer.music.unpause()
 
     def mute_unmute(self):
         """"
@@ -52,11 +53,25 @@ class AudioEngine:
         """"
         Function to set the volume
         """
-        pygame.mixer.music.set_volume(float(volume) / 100)
+        pygame.mixer.music.set_volume(volume)
+
+    def seek(self, position):
+        """"
+        Function to seek to a specific position
+        """
+        pygame.mixer.music.play(loops=0, start=position)
+
+    def get_position(self):
+        """
+        Get the current position of the song
+        """
+
+        return pygame.mixer.music.get_pos()
+
+
 # Ham main test thoi
 if __name__ == '__main__':
     # Initialize pygame mixer
-    pygame.mixer.init()
     # Initialize the main window
     root = Tk()
     root.title('MP3-Player')
@@ -93,6 +108,7 @@ if __name__ == '__main__':
             audio_engine.audio_files.append(song)  # Append each file to the audio list
             song_box.insert(END, audio_engine.load_audio(song))  # Insert each song name into the listbox
 
+
     # Add commands to the menu
     add_song_menu.add_command(label="Add One Song To Playlist", command=add_song)
     add_song_menu.add_command(label="Add Many Songs To Playlist", command=add_many_songs)
@@ -104,9 +120,13 @@ if __name__ == '__main__':
     # Create buttons to start and pause the song
     play_button = Button(control_frame, text="Play Song", command=audio_engine.start_playback)
     play_button.grid(row=0, column=0, padx=10)
+
+
     def stop():
         audio_engine.stop_playback()
         song_box.select_clear(ACTIVE)
+
+
     # Create a pause/resume button
     pause_button = Button(control_frame, text="Stop", command=stop)
     pause_button.grid(row=0, column=1, padx=10)
