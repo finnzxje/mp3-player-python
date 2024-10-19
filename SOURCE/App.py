@@ -239,7 +239,6 @@ class App(customtkinter.CTk):
         )
         self.import_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER) 
 
-        
 
 
 
