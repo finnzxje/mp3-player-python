@@ -8,7 +8,7 @@ class Track:
         """"
         Initialize the Track class
         """
-        self.title = file_path.split("/")[-1]
+        self.title = file_path.split("/")[-1].split(".mp3")[0]
         self.artist = ""
         self.album = ""
         self.duration = 0
