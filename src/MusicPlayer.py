@@ -23,9 +23,11 @@ class MusicPlayer:
         """
         Add tracks from files to the playlist
         """
+        existed_tracks = [track.get_path() for track in self.playlist.get_tracks()]
         for file_path in file_paths:
-            track = Track(file_path)
-            self.playlist.add_track(track)
+            if file_path not in existed_tracks:
+                track = Track(file_path)
+                self.playlist.add_track(track)
 
     def play(self):
         """
