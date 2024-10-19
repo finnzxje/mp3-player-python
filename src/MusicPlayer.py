@@ -4,6 +4,7 @@ from Track import Track
 from tkinter import filedialog
 from tkinter import *
 
+
 class MusicPlayer:
 
     def __init__(self):
@@ -26,7 +27,6 @@ class MusicPlayer:
             track = Track(file_path)
             self.playlist.add_track(track)
 
-        print(self.playlist.get_tracks())
     def play(self):
         """
         Play the current track  (it's can be random song or first to end song of folder)
@@ -37,6 +37,15 @@ class MusicPlayer:
         self.audio_engine.load_audio(self.current_track.get_path())
         self.audio_engine.start_playback()
         self.is_playing = True
+
+    def play_at_index(self, index):
+        """
+        Play the track at the given index
+        :param index:
+        :return:
+        """
+        self.index = index
+        self.play()
 
     def pause(self):
         """
@@ -132,13 +141,14 @@ class MusicPlayer:
 
         return self.playlist.get_tracks()
 
+
 if __name__ == "__main__":
     """
     Test the MusicPlayer class
     """
     tk = Tk()
     music_player = MusicPlayer()
-#    music_player.add_track_from_files(["C:\\Users\\LENOVO\\Desktop\\TEFLON DON.mp3"])
+    #    music_player.add_track_from_files(["C:\\Users\\LENOVO\\Desktop\\TEFLON DON.mp3"])
     while True:
         print("Enter 1 for playing")
         print("Enter 2 for pausing")
@@ -176,8 +186,7 @@ if __name__ == "__main__":
             exit(0)
         elif choice == 11:
             file_paths = filedialog.askopenfilenames(initialdir='C:/Users/LENOVO/Desktop',
-                                                      title="Choose A Song", filetypes=(("mp3 Files", "*.mp3"),))
+                                                     title="Choose A Song", filetypes=(("mp3 Files", "*.mp3"),))
             music_player.add_track_from_files(file_paths)
         else:
             print("Invalid choice")
-
