@@ -1,5 +1,5 @@
 import random
-from SOURCE.Track import Track
+from src.Track import Track
 from tkinter import filedialog
 from tkinter import *
 
