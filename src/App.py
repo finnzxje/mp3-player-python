@@ -4,10 +4,13 @@ import sys
 import customtkinter
 import tkinter
 import traceback
+from tkinter import filedialog
 from PIL import Image
 import psutil
 import threading
 from __version__ import __version__ as version
+from src.MusicPlayer import MusicPlayer
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 customtkinter.set_appearance_mode("System") 
 customtkinter.set_default_color_theme(os.path.join("Assets", "Themes", "MP3_MTH.json"))  
@@ -17,6 +20,12 @@ class App(customtkinter.CTk):
     The main MP3 application
     """
     def __init__(self) -> None:
+        """
+        Initialize the App class
+        """
+
+        self.music_player = MusicPlayer()
+
         super().__init__()
         # Configure window
         self.title("MP3_PLAYER")
@@ -56,7 +65,7 @@ class App(customtkinter.CTk):
         self.autoplay = True
         self.FONT = "Roboto Medium"
 
-        self.songs = []  # Initialize your songs list
+        # Initialize your songs list
        
         self.createWidgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # Free memory when closing 
@@ -227,23 +236,35 @@ class App(customtkinter.CTk):
      #SOUTH FRAME
         self.import_button = customtkinter.CTkButton(
             master = self.south_frame,
-            command= lambda : self.import_toggle() , 
-           image=self.imageCache.get("import"),
-           fg_color='transparent',
-           hover_color=self.south_frame.cget("bg_color"), 
-           text="Import Song(s)", 
-           font= (self.FONT, -14), 
-           width=240, 
-           height=50, 
-           text_color=self.logolabel.cget("text_color")
+            command= lambda : self.import_files() ,
+            image=self.imageCache.get("import"),
+            fg_color='transparent',
+            hover_color=self.south_frame.cget("bg_color"),
+            text="Import Song(s)",
+            font= (self.FONT, -14),
+            width=240,
+            height=50,
+            text_color=self.logolabel.cget("text_color")
         )
-        self.import_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER) 
+        self.import_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
+    def import_files(self):
+        """
+        Import file(s) from local machine
+        """
+        files_name = filedialog.askopenfilenames(title='Choose songs', filetypes=(('MP3 Files', '*.mp3'),))
 
+        self.music_player.add_track_from_files(files_name)
+        self.update_song_box()
 
-
-
-
+    def update_song_box(self):
+        """
+        Update the song box
+        :return:
+        """
+        self.song_box.delete("1.0", tkinter.END)
+        for index, song in enumerate(self.music_player.get_all_tracks()):
+            self.song_box.insert(tkinter.END, f"{index + 1}. {song}\n")
 
     def play_search(self, index_label: str) -> None:
         """
@@ -252,13 +273,15 @@ class App(customtkinter.CTk):
             index_label (str): The index of the song
         """
         self.playbutton.configure(state=tkinter.DISABLED)
+        if index_label == "" or not index_label.isdigit():
+            self.playbutton.configure(state=tkinter.NORMAL)
+            return
+
+        if int(index_label) > len(self.music_player.get_all_tracks()):
+            self.playbutton.configure(state=tkinter.NORMAL)
+            return
         try:
-            index = int(index_label)
-            song = self.songs[index - 1]
-            self.playing = True
-            self.effects_checkbox.deselect()
-            self.effects()
-            self.play(song)
+            self.music_player.play_at_index(int(index_label) - 1)
         except Exception as e:
             print(traceback.format_exc())
         self.playbutton.configure(state=tkinter.NORMAL)
@@ -271,35 +294,7 @@ class App(customtkinter.CTk):
             """
             window.attributes("-topmost", 1)
             window.attributes("-topmost", 0)  
-    def imports_toggle(self) -> None:
-        """
-        Toggles the imports frame
-        """
-        try:
-            self.imports_frame.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
-        except:
-            self.draw_imports_frame()
-    def  draw_import_frame (self) -> None :
-        self.imports_frame = customtkinter.CTkFrame(
-            master=self, width=self.WIDTH * (755 / self.WIDTH), height=self.HEIGHT * (430 / self.HEIGHT)
-        )
-        self.imports_frame.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
-        self.left_frame = customtkinter.CTkFrame(
-            master=self.imports_frame, width=350, height=380
-        )
-        self.left_frame.place(relx=0.25, rely=0.47, anchor=tkinter.CENTER)
 
-        self.right_frame = customtkinter.CTkFrame(
-            master=self.imports_frame, width=350, height=380
-        )
-        self.right_frame.place(relx=0.75, rely=0.47, anchor=tkinter.CENTER)
-
-        self.import_title = customtkinter.CTkLabel(
-            master=self.left_frame,
-            text="Choose a source",
-            font=(self.FONT, -20),
-            text_color=self.logolabel.cget("text_color"),
-        )
 
 if __name__ == "__main__":
     app = App()
