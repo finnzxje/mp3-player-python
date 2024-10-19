@@ -29,7 +29,7 @@ class MusicPlayer:
         print(self.playlist.get_tracks())
     def play(self):
         """
-        Play the current track
+        Play the current track  (it's can be random song or first to end song of folder)
         """
         if len(self.playlist) == 0:
             return
