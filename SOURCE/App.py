@@ -29,25 +29,28 @@ class App(customtkinter.CTk):
 
         self.imageCache = {
             # Add your images here
-            "empty": customtkinter.CTkImage(Image.open(os.path.join("Assets", "UIAssets", "empty.png")), size=(1, 1)),
-            "playing": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-pause-light.png")),
-                                               light_image=Image.open(os.path.join("Assets", "Player", "player-pause.png")),
-                                               size=(32, 32)),
-            "paused": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-play-light.png")),
-                                               light_image=Image.open(os.path.join("Assets", "Player", "player-play.png")),
-                                               size=(32, 32)),
-            "shuffle": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-shuffle-light.png")),
-                                               light_image=Image.open(os.path.join("Assets", "Player", "player-shuffle.png")),
+           "empty": customtkinter.CTkImage(Image.open(os.path.join("Assets", "UIAssets", "empty.png")), size=(1, 1)),
+           "playing": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-pause-light.png")),
+                                              light_image=Image.open(os.path.join("Assets", "Player", "player-pause.png")),
+                                              size=(32, 32)),
+           "paused": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-play-light.png")),
+                                              light_image=Image.open(os.path.join("Assets", "Player", "player-play.png")),
+                                              size=(32, 32)),
+           "shuffle": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-shuffle-light.png")),
+                                              light_image=Image.open(os.path.join("Assets", "Player", "player-shuffle.png")),
+                                              size=(25, 25)),
+           "loop-off": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
+                                               light_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
                                                size=(25, 25)),
-            "loop-off": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
-                                                light_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
-                                                size=(25, 25)),
-            "skip-forward": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward-light.png")),
-                                                    light_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward.png")),
-                                                    size=(30, 30)),
-            "skip-back": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-back-light.png")),
-                                                 light_image=Image.open(os.path.join("Assets", "Player", "player-skip-back.png")),
-                                                 size=(30, 30)),
+           "skip-forward": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward-light.png")),
+                                                   light_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward.png")),
+                                                   size=(30, 30)),
+           "skip-back": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-back-light.png")),
+                                                light_image=Image.open(os.path.join("Assets", "Player", "player-skip-back.png")),
+                                                size=(30, 30)),
+           "import"    : customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/import-light.png"),   
+                                                             light_image=Image.open("./Assets/UIAssets/import.png"),  
+                                                                      size=(30,30)),
         }
         self.loop = False
         self.autoplay = True
@@ -215,6 +218,33 @@ class App(customtkinter.CTk):
             command=lambda: self.play_search(self.index_entry.get())
         )
         self.playbutton.place(relx=0.5, rely=0.95, anchor=tkinter.CENTER)
+     #WEST FRAME
+        self.logolabel = customtkinter.CTkLabel(
+            master=self.west_frame, text=f" MP3_PROMAX{version}", font=(self.FONT, -16)
+        )
+        self.logolabel.place(relx=0.5, rely=0.12, anchor=tkinter.CENTER)
+
+     #SOUTH FRAME
+        self.import_button = customtkinter.CTkButton(
+            master = self.south_frame,
+            command= lambda : self.import_toggle() , 
+           image=self.imageCache.get("import"),
+           fg_color='transparent',
+           hover_color=self.south_frame.cget("bg_color"), 
+           text="Import Song(s)", 
+           font= (self.FONT, -14), 
+           width=240, 
+           height=50, 
+           text_color=self.logolabel.cget("text_color")
+        )
+        self.import_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER) 
+
+        
+
+
+
+
+
 
     def play_search(self, index_label: str) -> None:
         """
@@ -233,26 +263,7 @@ class App(customtkinter.CTk):
         except Exception as e:
             print(traceback.format_exc())
         self.playbutton.configure(state=tkinter.NORMAL)
-    #WEST FRAME
-        self.logolabel = customtkinter.CTkLabel(
-            master=self.west_frame, text=f" MP3_PROMAX{version}", font=(self.FONT, -16)
-        )
-        self.logolabel.place(relx=0.5, rely=0.12, anchor=tkinter.CENTER)
-
-    #SOUTH FRAME
-        self.import_button = customtkinter.CTkButton(
-            master = self.south_frame,
-            command= lambda : self.import_toggle() , 
-           image=self.imageCache.get("import"),
-           fg_color='transparent',
-           hover_color=self.south_frame.cget("bg_color"), 
-           text="Import Song(s)", 
-           font= (self.FONT, -14), 
-           width=240, 
-           height=50, 
-           text_color=self.logolabel.cget("text_color")
-        )
-        self.import_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER) 
+    
     def raise_above_all(self, window:customtkinter.CTkToplevel) -> None:
             """r
             Raises a window above all other window 
@@ -274,7 +285,6 @@ class App(customtkinter.CTk):
             master=self, width=self.WIDTH * (755 / self.WIDTH), height=self.HEIGHT * (430 / self.HEIGHT)
         )
         self.imports_frame.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
-
         self.left_frame = customtkinter.CTkFrame(
             master=self.imports_frame, width=350, height=380
         )
