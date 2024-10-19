@@ -10,6 +10,8 @@ import psutil
 import threading
 from __version__ import __version__ as version
 from src.MusicPlayer import MusicPlayer
+import time
+import pygame
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 customtkinter.set_appearance_mode("System") 
@@ -264,6 +266,19 @@ class App(customtkinter.CTk):
         self.song_box.delete("1.0", tkinter.END)
         for index, song in enumerate(self.music_player.get_all_tracks()):
             self.song_box.insert(tkinter.END, f"{index + 1}. {song}\n")
+
+    def shuffle(self):
+        """
+        Shuffle
+        """
+        self.music_player.shuffle_playlist()
+
+    def loopEvent(self):
+        """
+        Loop
+        """
+        if self.music_player.is_playing:
+            pygame.mixer.music.play(-1)
 
     def play_search(self, index_label: str) -> None:
         """
