@@ -271,7 +271,7 @@ class App(customtkinter.CTk):
         Shuffle
         """
         self.music_player.shuffle_playlist()
-
+        self.update_song_box()
     def loopEvent(self):
         """
         Loop

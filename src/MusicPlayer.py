@@ -40,6 +40,9 @@ class MusicPlayer:
         self.is_playing = True
 
     def loop (self):
+        """
+        Create toggle function here
+        """
         self.is_loop = not self.is_loop
         if self.is_loop:
             self.audio_engine.start_loop()

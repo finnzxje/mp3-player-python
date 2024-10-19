@@ -24,6 +24,9 @@ class AudioEngine:
         pygame.mixer.music.play()
 
     def start_loop(self):
+        """"
+        Function to start the loop
+        """
         pygame.mixer.music.play(-1)
 
     def stop_playback(self):
