@@ -65,7 +65,6 @@ class App(customtkinter.CTk):
         self.autoplay = True
         self.FONT = "Roboto Medium"
 
-        # Initialize your songs list
        
         self.createWidgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # Free memory when closing 
@@ -293,7 +292,7 @@ class App(customtkinter.CTk):
                 window (tkinter.Tk): The window to raise
             """
             window.attributes("-topmost", 1)
-            window.attributes("-topmost", 0)  
+            window.attributes("-topmost", 0)
 
 
 if __name__ == "__main__":
