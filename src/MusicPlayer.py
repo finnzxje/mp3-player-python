@@ -125,6 +125,12 @@ class MusicPlayer:
 
         return self.playlist.get_track(self.index)
 
+    def get_all_tracks(self):
+        """"
+        Get all tracks in the playlist
+        """
+
+        return self.playlist.get_tracks()
 
 if __name__ == "__main__":
     """
