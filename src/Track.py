@@ -8,7 +8,7 @@ class Track:
         """"
         Initialize the Track class
         """
-        self.title = ""
+        self.title = file_path.split("/")[-1].split(".mp3")[0]
         self.artist = ""
         self.album = ""
         self.duration = 0
@@ -24,14 +24,13 @@ class Track:
         except ID3NoHeaderError:
             print("ID3 tag not found in file: {}".format(self.file_path))
             return {
-                "title": "Not found",
+                "title": self.title,
                 "artist": "Not found",
                 "album": "Not found",
                 "duration": audio.info.length,
                 "file_path": self.file_path
             }
 
-        self.title = id3["title"][0]
         self.artist = id3["artist"][0]
         self.album = id3["album"][0]
         self.duration = audio.info.length
