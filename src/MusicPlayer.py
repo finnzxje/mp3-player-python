@@ -18,7 +18,6 @@ class MusicPlayer:
         self.volume = 0.5
         self.current_position = 0
         self.index = 0
-        self.is_loop = False
 
     def add_track_from_files(self, file_paths):
         """
@@ -41,15 +40,12 @@ class MusicPlayer:
         self.audio_engine.start_playback()
         self.is_playing = True
 
-    def loop (self):
+    def on_loop(self):
         """
-        Create toggle function here
+        Fuction loop
         """
-        self.is_loop = not self.is_loop
-        if self.is_loop:
-            self.audio_engine.start_loop()
-        else:
-            self.play()
+        self.audio_engine.start_loop()
+
     def play_at_index(self, index):
         """
         Play the track at the given index

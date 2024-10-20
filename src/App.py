@@ -7,7 +7,6 @@ import traceback
 from tkinter import filedialog
 from PIL import Image
 import psutil
-import threading
 from __version__ import __version__ as version
 from MusicPlayer import MusicPlayer
 
@@ -55,6 +54,10 @@ class App(customtkinter.CTk):
            "loop-off": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
                                                light_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
                                                size=(25, 25)),
+            "loop-on": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
+                light_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
+                size=(25, 25)),
+
            "skip-forward": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward-light.png")),
                                                    light_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward.png")),
                                                    size=(30, 30)),
