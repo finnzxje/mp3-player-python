@@ -10,8 +10,7 @@ import psutil
 import threading
 from __version__ import __version__ as version
 from src.MusicPlayer import MusicPlayer
-import time
-import pygame
+
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 customtkinter.set_appearance_mode("System") 
@@ -279,7 +278,7 @@ class App(customtkinter.CTk):
         Loop
         """
         if self.music_player.is_playing:
-            pygame.mixer.music.play(-1)
+            self.music_player.loop()
 
     def play_search(self, index_label: str) -> None:
         """
