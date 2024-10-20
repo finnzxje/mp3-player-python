@@ -93,7 +93,6 @@ class MusicPlayer:
         self.index = 0
         self.playlist.shuffle()
         self.current_track = self.playlist.tracks[self.index]
-        self.play()
 
     def set_volume(self, volume):
         """

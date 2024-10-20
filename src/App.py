@@ -148,7 +148,7 @@ class App(customtkinter.CTk):
         self.next_button = customtkinter.CTkButton(
             master=self.interface_frame, 
             image=self.imageCache.get("skip-forward"), 
-            command=lambda: print("Next"),
+            command=lambda: self.next_song(),
             text="", 
             width=5, 
             height=5, 
@@ -161,7 +161,7 @@ class App(customtkinter.CTk):
         self.previous_button = customtkinter.CTkButton(
             master=self.interface_frame, 
             image=self.imageCache.get("skip-back"), 
-            command=lambda: print("Previous"),
+            command=lambda: self.previous_song(),
             text="", 
             width=5, 
             height=5, 
@@ -279,6 +279,7 @@ class App(customtkinter.CTk):
         """
         self.music_player.shuffle_playlist()
         self.update_song_box()
+        self.play_search("1")
 
     def loopEvent(self) ->None : 
 
@@ -308,10 +309,14 @@ class App(customtkinter.CTk):
             return
         try:
             self.music_player.play_at_index(int(index_label) - 1)
+            self.playpause_button.configure(state="NORMAL", image=self.imageCache["playing"])
+            self.next_button.configure(state="NORMAL")
+            self.previous_button.configure(state="NORMAL")
+
         except Exception as e:
             print(traceback.format_exc())
         self.playbutton.configure(state=tkinter.NORMAL)
-    
+
     def raise_above_all(self, window:customtkinter.CTkToplevel) -> None:
             """r
             Raises a window above all other window 
@@ -320,7 +325,32 @@ class App(customtkinter.CTk):
             """
             window.attributes("-topmost", 1)
             window.attributes("-topmost", 0)
+    def playpause(self) -> None:
+        """
+        Play or pause
+        """
+        if self.music_player.is_playing:
+            self.music_player.pause()
+            self.playpause_button.configure(state="normal", image=self.imageCache["paused"])
+        else:
+            self.music_player.play()
+            self.playpause_button.configure(state="normal", image=self.imageCache["playing"])
 
+    def next_song(self):
+        """
+        Skip to the next song
+        :return:
+        """
+        next_song_index = (self.music_player.index + 1) % len(self.music_player.playlist.tracks)
+        self.play_search(str(next_song_index + 1))
+
+    def previous_song(self):
+        """
+        Skip to the previous song
+        :return:
+        """
+        previous_song_index = (self.music_player.index - 1) % len(self.music_player.playlist.tracks)
+        self.play_search(str(previous_song_index + 1))
 
 if __name__ == "__main__":
     app = App()
