@@ -9,7 +9,7 @@ from PIL import Image
 import psutil
 import threading
 from __version__ import __version__ as version
-from src.MusicPlayer import MusicPlayer
+from MusicPlayer import MusicPlayer
 
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -49,6 +49,9 @@ class App(customtkinter.CTk):
            "shuffle": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-shuffle-light.png")),
                                               light_image=Image.open(os.path.join("Assets", "Player", "player-shuffle.png")),
                                               size=(25, 25)),
+           "loop": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-light.png")),
+                                               light_image=Image.open(os.path.join("Assets", "Player", "loop.png")),
+                                               size=(25, 25)),
            "loop-off": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
                                                light_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
                                                size=(25, 25)),
@@ -137,6 +140,7 @@ class App(customtkinter.CTk):
             hover_color=self.interface_frame.cget("bg_color"), 
             corner_radius=8
         )
+
 
         self.next_button = customtkinter.CTkButton(
             master=self.interface_frame, 
@@ -273,12 +277,17 @@ class App(customtkinter.CTk):
         self.music_player.shuffle_playlist()
         self.update_song_box()
 
-    def loopEvent(self):
+    def loopEvent(self) ->None : 
+
         """
-        Loop
+        Set the Loop state 
         """
-        if self.music_player.is_playing:
-            self.music_player.loop()
+        if self.loop == True : 
+            self.loop = False
+            self.loop_button.configure(state = "normal" , image = self.imageCache["loop"])
+        else : 
+            self.loop = True 
+            self.loop_button.configure(state ="normal" , image = self.imageCache["loop-off"])
 
     def play_search(self, index_label: str) -> None:
         """
