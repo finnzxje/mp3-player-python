@@ -7,7 +7,6 @@ import traceback
 from tkinter import filedialog
 from PIL import Image
 import psutil
-import threading
 from __version__ import __version__ as version
 from src.MusicPlayer import MusicPlayer
 
@@ -52,6 +51,10 @@ class App(customtkinter.CTk):
            "loop-off": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
                                                light_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
                                                size=(25, 25)),
+            "loop-on": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
+                light_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
+                size=(25, 25)),
+
            "skip-forward": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward-light.png")),
                                                    light_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward.png")),
                                                    size=(30, 30)),
@@ -278,7 +281,15 @@ class App(customtkinter.CTk):
         Loop
         """
         if self.music_player.is_playing:
-            self.music_player.loop()
+            self.loop = not self.loop
+            if self.loop:
+                self.loop_button.configure(image=self.imageCache.get("loop-on"))
+                self.music_player.on_loop()
+            else:
+                self.loop_button.configure(image=self.imageCache.get("loop-off"))
+                self.music_player.play()
+
+
 
     def play_search(self, index_label: str) -> None:
         """
