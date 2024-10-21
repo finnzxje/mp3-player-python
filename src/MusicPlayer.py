@@ -1,3 +1,4 @@
+import pygame
 from Playlist import Playlist
 from AudioEngine import AudioEngine
 from Track import Track
@@ -18,6 +19,8 @@ class MusicPlayer:
         self.volume = 0.5
         self.current_position = 0
         self.index = 0
+        self.start_time = 0  # Lưu thời gian bắt đầu phát nhạc
+        self.elapsed_time = 0
 
     def add_track_from_files(self, file_paths):
         """
@@ -57,10 +60,23 @@ class MusicPlayer:
 
     def pause(self):
         """
-        Pause the current track
+        pause song and save indx of current song
         """
-        self.audio_engine.pause_playback(self.is_playing)
-        self.is_playing = not self.is_playing
+        if self.is_playing:
+            # Lưu lại vị trí hiện tại
+            self.current_position = pygame.mixer.music.get_pos()
+            pygame.mixer.music.pause()
+            self.is_playing = False
+
+    def play1(self):
+        """
+    run song in current idx or run song when the song end
+    """
+        if self.current_position > 0:
+            pygame.mixer.music.unpause()
+        else:
+            pygame.mixer.music.play()
+        self.is_playing = True
 
     def stop(self):
         """
