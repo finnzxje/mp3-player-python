@@ -338,6 +338,7 @@ class App(customtkinter.CTk):
             self.playbutton.configure(state=tkinter.NORMAL)
             return
         try:
+            self.songlabel.configure(text=self.music_player.get_all_tracks()[int(index_label) - 1].title)
             self.music_player.play_at_index(int(index_label) - 1)
             self.playpause_button.configure(state="NORMAL", image=self.imageCache["playing"])
             self.update_UI()
@@ -421,6 +422,9 @@ class App(customtkinter.CTk):
             self.progress_label_left.configure(
                 text=f"{int(curr_time / 60):02d}:{int(curr_time % 60):02d}")
             self.progressbar.after(1000, self.update_progressbar)
+
+    def draw_lyrics_box(self):
+        pass
 
 if __name__ == "__main__":
     app = App()
