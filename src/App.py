@@ -360,9 +360,8 @@ class App(customtkinter.CTk):
         Play or pause
         """
         if self.music_player.is_playing:
-            if self.music_player.get_position() <= 0:
-                self.music_player.play()
-                self.playpause_button.configure(state="normal", image=self.imageCache["playing"])
+            if self.music_player.is_ended():
+                self.play_search(str(self.music_player.index + 1))
             else:
                 self.music_player.pause()
                 self.playpause_button.configure(state="normal", image=self.imageCache["paused"])
@@ -386,6 +385,15 @@ class App(customtkinter.CTk):
         previous_song_index = (self.music_player.index - 1) % len(self.music_player.playlist.tracks)
         self.play_search(str(previous_song_index + 1))
 
+    def slider_event(self, value):
+        """
+        Update the song according to the progress bar
+        :return:
+        """
+        seconds = value / 100 * self.music_player.get_duration()
+        self.music_player.seek(seconds)
+        self.update_UI()
+
     def update_UI(self):
         """
         Update the UI
@@ -394,7 +402,25 @@ class App(customtkinter.CTk):
         self.next_button.configure(state="NORMAL")
         self.previous_button.configure(state="NORMAL")
         self.progressbar.configure(state=tkinter.NORMAL)
+        self.progress_label_right.configure(
+            text=f"{int(self.music_player.get_duration() / 60):02d}:{int(self.music_player.get_duration() % 60):02d}")
+        self.update_progressbar()
 
+    def update_progressbar(self):
+        """
+        Update the progress bar
+        :return:
+        """
+        if self.music_player.is_ended():
+            self.progressbar.set(100)
+            self.progress_label_left.configure(text=f"{int(self.music_player.get_duration() / 60):02d}:{int(self.music_player.get_duration() % 60):02d}")
+        else:
+            curr_time = self.music_player.get_position() / 1000
+            progress = curr_time / self.music_player.get_duration()
+            self.progressbar.set(int(progress * 100))
+            self.progress_label_left.configure(
+                text=f"{int(curr_time / 60):02d}:{int(curr_time % 60):02d}")
+            self.progressbar.after(1000, self.update_progressbar)
 
 if __name__ == "__main__":
     app = App()

@@ -13,6 +13,7 @@ class Track:
         self.album = ""
         self.duration = 0
         self.file_path = file_path
+        self.get_metadata()
 
     def get_metadata(self):
         """"
@@ -21,6 +22,7 @@ class Track:
         audio = MP3(self.file_path)
         try:
             id3 = EasyID3(self.file_path)
+
         except ID3NoHeaderError:
             print("ID3 tag not found in file: {}".format(self.file_path))
             return {
@@ -31,8 +33,7 @@ class Track:
                 "file_path": self.file_path
             }
 
-        self.artist = id3["artist"][0]
-        self.album = id3["album"][0]
+
         self.duration = audio.info.length
 
         return {
@@ -48,6 +49,12 @@ class Track:
         Return the file path of the track
         """
         return self.file_path
+
+    def get_duration(self):
+        """"
+        Return the duration of the track
+        """
+        return self.duration
 
     def __str__(self):
         """
