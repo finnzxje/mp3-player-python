@@ -67,6 +67,7 @@ class App(customtkinter.CTk):
            "import"    : customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/import-light.png"),   
                                                              light_image=Image.open("./Assets/UIAssets/import.png"),  
                                                                       size=(30,30)),
+
         }
         self.loop = False
         self.autoplay = True
@@ -255,6 +256,35 @@ class App(customtkinter.CTk):
         )
         self.import_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
+        #NORTH FRAME
+        self.songlabel = customtkinter.CTkButton(
+            master=self.north_frame,
+            text=f"Play Something!",
+            width=240,
+            height=50,
+            font=(self.FONT, -14),
+            command=lambda: self.draw_lyrics_box(),
+            fg_color='transparent',
+            hover_color=self.north_frame.cget("bg_color"),
+            text_color=self.logolabel.cget("text_color"),
+            image=self.imageCache["empty"],
+        )
+        self.songlabel.place(relx=0.5, rely=0.3, anchor=tkinter.CENTER)
+
+        self.progressbar = customtkinter.CTkSlider(master=self.north_frame, width=225, height=15, from_=0, to=100,
+                                                   number_of_steps=100, command=lambda x: self.slider_event(x),
+                                                   state=tkinter.DISABLED)
+        self.progressbar.place(relx=0.5, rely=0.7, anchor=tkinter.CENTER)
+        self.progressbar.set(0)
+        self.progress_label_left = customtkinter.CTkLabel(
+            master=self.north_frame, text="0:00", font=(self.FONT, -12), width=5
+        )
+        self.progress_label_left.place(relx=0.1, rely=0.7, anchor=tkinter.CENTER)
+
+        self.progress_label_right = customtkinter.CTkLabel(
+            master=self.north_frame, text="0:00", font=(self.FONT, -12), width=5
+        )
+        self.progress_label_right.place(relx=0.9, rely=0.7, anchor=tkinter.CENTER)
     def import_files(self):
         """
         Import file(s) from local machine
@@ -310,12 +340,12 @@ class App(customtkinter.CTk):
         try:
             self.music_player.play_at_index(int(index_label) - 1)
             self.playpause_button.configure(state="NORMAL", image=self.imageCache["playing"])
-            self.next_button.configure(state="NORMAL")
-            self.previous_button.configure(state="NORMAL")
+            self.update_UI()
 
         except Exception as e:
             print(traceback.format_exc())
         self.playbutton.configure(state=tkinter.NORMAL)
+
 
     def raise_above_all(self, window:customtkinter.CTkToplevel) -> None:
             """r
@@ -330,10 +360,14 @@ class App(customtkinter.CTk):
         Play or pause
         """
         if self.music_player.is_playing:
-            self.music_player.pause()
-            self.playpause_button.configure(state="normal", image=self.imageCache["paused"])
+            if self.music_player.get_position() <= 0:
+                self.music_player.play()
+                self.playpause_button.configure(state="normal", image=self.imageCache["playing"])
+            else:
+                self.music_player.pause()
+                self.playpause_button.configure(state="normal", image=self.imageCache["paused"])
         else:
-            self.music_player.play()
+            self.music_player.pause()
             self.playpause_button.configure(state="normal", image=self.imageCache["playing"])
 
     def next_song(self):
@@ -351,6 +385,16 @@ class App(customtkinter.CTk):
         """
         previous_song_index = (self.music_player.index - 1) % len(self.music_player.playlist.tracks)
         self.play_search(str(previous_song_index + 1))
+
+    def update_UI(self):
+        """
+        Update the UI
+        :return:
+        """
+        self.next_button.configure(state="NORMAL")
+        self.previous_button.configure(state="NORMAL")
+        self.progressbar.configure(state=tkinter.NORMAL)
+
 
 if __name__ == "__main__":
     app = App()
