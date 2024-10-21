@@ -288,11 +288,9 @@ class App(customtkinter.CTk):
         """
         if self.loop == True : 
             self.loop = False
-            self.music_player.on_loop()
             self.loop_button.configure(state = "normal" , image = self.imageCache["loop"])
         else : 
-            self.loop = True
-            self.music_player.play()
+            self.loop = True 
             self.loop_button.configure(state ="normal" , image = self.imageCache["loop-off"])
 
     def play_search(self, index_label: str) -> None:
@@ -335,7 +333,7 @@ class App(customtkinter.CTk):
             self.music_player.pause()
             self.playpause_button.configure(state="normal", image=self.imageCache["paused"])
         else:
-            self.music_player.play1()
+            self.music_player.pause()
             self.playpause_button.configure(state="normal", image=self.imageCache["playing"])
 
     def next_song(self):
