@@ -39,6 +39,8 @@ class App(customtkinter.CTk):
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.minsize(self.WIDTH, self.HEIGHT)
         self.maxsize(755, 430)
+        self.found = False
+        self.index_search = None
 
         self.imageCache = {
             # Add your images here
@@ -85,7 +87,6 @@ class App(customtkinter.CTk):
                                               size=(25,25)) ,
         }
         self.loop = False
-        self.mute = False
         self.autoplay = True
         self.FONT = "Roboto Medium"
 
@@ -216,6 +217,7 @@ class App(customtkinter.CTk):
             placeholder_text="Search for audio"
         )
         self.search_entry.place(relx=0.5, rely=0.05, anchor=tkinter.CENTER)
+        self.search_entry.bind("<Return>", lambda x: self.search_song())
 
         self.listframe = customtkinter.CTkFrame(
             master=self.east_frame.tab("Imported"), 
@@ -248,14 +250,13 @@ class App(customtkinter.CTk):
             text="Play", 
             width=150, 
             height=25,
-            command=lambda: self.play_search(self.index_entry.get())
+            command=lambda: self.play_search_song()
         )
         self.playbutton.place(relx=0.5, rely=0.95, anchor=tkinter.CENTER)
      #WEST FRAME
         self.logolabel = customtkinter.CTkLabel(
             master=self.west_frame, text=f" MP3_PROMAX{version}", font=(self.FONT, -16)
         )
-
         self.logolabel.place(relx=0.5, rely=0.12, anchor=tkinter.CENTER)
 
         self.themelabel = customtkinter.CTkLabel(master=self.west_frame, text="Appearance Mode:")
@@ -356,6 +357,68 @@ class App(customtkinter.CTk):
             master=self.north_frame, text="0:00", font=(self.FONT, -12), width=5
         )
         self.progress_label_right.place(relx=0.9, rely=0.7, anchor=tkinter.CENTER)
+
+        # CREATE SONG VOLUME
+        self.song_volume = customtkinter.CTkSlider( master=self.center_frame,
+                                                    width=225, height=15, from_=0, to=100,
+                                                    number_of_steps=100, command=lambda x: self.call_volume(x),
+                                                    progress_color="#1DB954",
+                                                    fg_color="#333333",
+                                                    )
+        self.song_volume.place(relx=0.57, rely=0.8, anchor=tkinter.CENTER)
+        self.song_volume_left = customtkinter.CTkLabel(
+            master=self.center_frame, text="Volume ", font=(self.FONT, -12), width=5
+        )
+        self.song_volume_left.place(relx=0.15, rely=0.8, anchor=tkinter.CENTER)
+
+        self.song_volume_left_top = customtkinter.CTkLabel(
+            master=self.center_frame, text="Min", font=(self.FONT, -12), width=5
+        )
+        self.song_volume_left_top.place(relx=0.3, rely=0.7, anchor=tkinter.CENTER)
+
+        self.song_volume_right_top = customtkinter.CTkLabel(
+            master=self.center_frame, text="Max", font=(self.FONT, -12), width=5
+        )
+        self.song_volume_right_top.place(relx=0.84, rely=0.7, anchor=tkinter.CENTER)
+
+    def play_search_song(self):
+        """
+        Check whether to run Search Audio or Enter Index
+        """
+        if self.found == True:
+            self.found = False
+            index = str(self.index_search +1 )
+        else:
+            index = str(self.index_entry.get())
+        self.play_search(str(index))
+
+    def search_song(self):
+        """
+       Search for songs in playlists. If the search keyword is empty, display the entire song list again.
+        """
+        self.found = False
+        search_term = self.search_entry.get().strip().lower()
+        self.song_box.delete("1.0", tkinter.END)
+
+        if not search_term:
+            self.update_song_box()
+            return
+
+        for index, song in enumerate(self.music_player.get_all_tracks()):
+            if search_term in song.title.lower():
+                self.index_search = index
+                self.song_box.insert(tkinter.END, f"{index + 1}. {song.title}\n")
+                self.found = True
+
+        if not self.found:
+            self.song_box.insert(tkinter.END, "Không tìm thấy bài hát.\n")
+
+    def call_volume(self, value):
+        """
+        Call volume
+        """
+        self.music_player.set_volume(float(value) / 100)
+
     def import_files(self):
         """
         Import file(s) from local machine
@@ -406,6 +469,8 @@ class App(customtkinter.CTk):
             self.mute = True
 
             self.mute_button.configure(state="normal", image=self.imageCache["mute"])
+            self.loop_button.configure(state="normal", image=self.imageCache["loop"])
+
 
     def play_search(self, index_label: str) -> None:
         """
@@ -422,6 +487,7 @@ class App(customtkinter.CTk):
             self.playbutton.configure(state=tkinter.NORMAL)
             return
         try:
+            self.songlabel.configure(text=self.music_player.get_all_tracks()[int(index_label) - 1].title)
             self.music_player.play_at_index(int(index_label) - 1)
             self.playpause_button.configure(state="NORMAL", image=self.imageCache["playing"])
             self.next_button.configure(state="NORMAL")
@@ -433,7 +499,7 @@ class App(customtkinter.CTk):
 
     def raise_above_all(self, window:customtkinter.CTkToplevel) -> None:
             """r
-            Raises a window above all other window 
+            Raises a window above all other window
             Args:
                 window (tkinter.Tk): The window to raise
             """
