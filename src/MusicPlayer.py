@@ -33,6 +33,7 @@ class MusicPlayer:
         """
         Play the current track  (it's can be random song or first to end song of folder)
         """
+        self.current_position = 0
         if len(self.playlist) == 0:
             return
         self.current_track = self.playlist.tracks[self.index]
@@ -111,7 +112,7 @@ class MusicPlayer:
         """
         Seek to a specific position
         """
-        self.current_position = position
+        self.current_position = position * 1000
         self.audio_engine.seek(position)
 
     def get_position(self):
@@ -119,7 +120,7 @@ class MusicPlayer:
         Get the current position of the song
         """
 
-        return self.audio_engine.get_position()
+        return self.current_position + self.audio_engine.get_position()
 
     def add_to_playlist(self, track):
         """"
@@ -148,6 +149,19 @@ class MusicPlayer:
 
         return self.playlist.get_tracks()
 
+    def get_duration(self):
+        """"
+        Get the duration of the current track
+        """
+
+        return self.playlist.get_track(self.index).get_duration()
+
+    def is_ended(self):
+        if self.audio_engine.get_position() < 0:
+            self.current_position = 0
+            return True
+        else:
+            return False
 
 if __name__ == "__main__":
     """
