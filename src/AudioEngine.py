@@ -1,6 +1,8 @@
 import pygame
 from tkinter import *
 from tkinter import filedialog
+import customtkinter
+
 
 
 class AudioEngine:
@@ -72,6 +74,14 @@ class AudioEngine:
         """
 
         return pygame.mixer.music.get_pos()
+    def change_theme(theme:str): 
+        """
+            change theme of the application
+            args : theme(str) :  theme can change (dark , light , system) 
+
+        """
+        customtkinter.set_appearance_mode(theme)
+
 
 
 # Ham main test thoi

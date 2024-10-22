@@ -62,7 +62,7 @@ class Track:
         """
         return self.title
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     """"
     Test the Track class with local file path
     """
