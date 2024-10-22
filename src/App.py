@@ -4,21 +4,25 @@ import sys
 import customtkinter
 import tkinter
 import traceback
+import webbrowser
+import pygame
 from tkinter import filedialog
 from PIL import Image
 import psutil
 from __version__ import __version__ as version
 from MusicPlayer import MusicPlayer
-
+from AudioEngine import AudioEngine
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-customtkinter.set_appearance_mode("System") 
-customtkinter.set_default_color_theme(os.path.join("Assets", "Themes", "MP3_MTH.json"))  
+customtkinter.set_appearance_mode("System")
+customtkinter.set_default_color_theme(os.path.join("Assets", "Themes", "MP3_MTH.json"))
+
 
 class App(customtkinter.CTk):
     """
     The main MP3 application
     """
+
     def __init__(self) -> None:
         """
         Initialize the App class
@@ -35,45 +39,65 @@ class App(customtkinter.CTk):
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.minsize(self.WIDTH, self.HEIGHT)
         self.maxsize(755, 430)
-
+        self.found = False
+        self.index_search = None
+        self.mute = False
+        self.autoplay = False
         self.imageCache = {
             # Add your images here
-           "empty": customtkinter.CTkImage(Image.open(os.path.join("Assets", "UIAssets", "empty.png")), size=(1, 1)),
-           "playing": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-pause-light.png")),
-                                              light_image=Image.open(os.path.join("Assets", "Player", "player-pause.png")),
-                                              size=(32, 32)),
-           "paused": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-play-light.png")),
-                                              light_image=Image.open(os.path.join("Assets", "Player", "player-play.png")),
-                                              size=(32, 32)),
-           "shuffle": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-shuffle-light.png")),
-                                              light_image=Image.open(os.path.join("Assets", "Player", "player-shuffle.png")),
-                                              size=(25, 25)),
-           "loop": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-light.png")),
-                                               light_image=Image.open(os.path.join("Assets", "Player", "loop.png")),
-                                               size=(25, 25)),
-           "loop-off": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
-                                               light_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
-                                               size=(25, 25)),
-            "loop-on": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
-                light_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
+            "empty": customtkinter.CTkImage(Image.open(os.path.join("Assets", "UIAssets", "empty.png")), size=(1, 1)),
+            "playing": customtkinter.CTkImage(
+                dark_image=Image.open(os.path.join("Assets", "Player", "player-pause-light.png")),
+                light_image=Image.open(os.path.join("Assets", "Player", "player-pause.png")),
+                size=(32, 32)),
+            "paused": customtkinter.CTkImage(
+                dark_image=Image.open(os.path.join("Assets", "Player", "player-play-light.png")),
+                light_image=Image.open(os.path.join("Assets", "Player", "player-play.png")),
+                size=(32, 32)),
+            "shuffle": customtkinter.CTkImage(
+                dark_image=Image.open(os.path.join("Assets", "Player", "player-shuffle-light.png")),
+                light_image=Image.open(os.path.join("Assets", "Player", "player-shuffle.png")),
                 size=(25, 25)),
+            "loop": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-light.png")),
+                                           light_image=Image.open(os.path.join("Assets", "Player", "loop.png")),
+                                           size=(25, 25)),
+            "loop-off": customtkinter.CTkImage(
+                dark_image=Image.open(os.path.join("Assets", "Player", "loop-off-light.png")),
+                light_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
+                size=(25, 25)),
+            "loop-on": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "loop-off.png")),
+                                              light_image=Image.open(
+                                                  os.path.join("Assets", "Player", "loop-off-light.png")),
+                                              size=(25, 25)),
 
-           "skip-forward": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward-light.png")),
-                                                   light_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward.png")),
-                                                   size=(30, 30)),
-           "skip-back": customtkinter.CTkImage(dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-back-light.png")),
-                                                light_image=Image.open(os.path.join("Assets", "Player", "player-skip-back.png")),
-                                                size=(30, 30)),
-           "import"    : customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/import-light.png"),   
-                                                             light_image=Image.open("./Assets/UIAssets/import.png"),  
-                                                                      size=(30,30)),
-
+            "skip-forward": customtkinter.CTkImage(
+                dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward-light.png")),
+                light_image=Image.open(os.path.join("Assets", "Player", "player-skip-forward.png")),
+                size=(30, 30)),
+            "skip-back": customtkinter.CTkImage(
+                dark_image=Image.open(os.path.join("Assets", "Player", "player-skip-back-light.png")),
+                light_image=Image.open(os.path.join("Assets", "Player", "player-skip-back.png")),
+                size=(30, 30)),
+            "import": customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/import-light.png"),
+                                             light_image=Image.open("./Assets/UIAssets/import.png"),
+                                             size=(30, 30)),
+            "github": customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/code-light.png"),
+                                             light_image=Image.open("./Assets/UIAssets/code.png"),
+                                             size=(25, 25)),
+            "settings": customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/settings-light.png"),
+                                               light_image=Image.open("./Assets/UIAssets/settings.png"),
+                                               size=(25, 25)),
+            "mute": customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/mute-light.png"),
+                                           light_image=Image.open("./Assets/UIAssets/mute-black.png"),
+                                           size=(25, 25)),
+            "unmute": customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/unmute-light.png"),
+                                             light_image=Image.open("./Assets/UIAssets/unmute-black.png"),
+                                             size=(25, 25)),
         }
         self.loop = False
         self.autoplay = True
         self.FONT = "Roboto Medium"
 
-       
         self.createWidgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  # Free memory when closing 
 
@@ -81,14 +105,14 @@ class App(customtkinter.CTk):
         """Terminate child processes"""
         self.destroy()
         self.quit()
-        
+
         current_pid = psutil.Process().pid
         process = psutil.Process(current_pid)
         children = process.children(recursive=True)
         print(f"Terminating {len(children)} child processes.")
         for child in children:
             child.terminate()
-        
+
         print("MP3 closed.")
         os.kill(current_pid, signal.SIGTERM)
         sys.exit()
@@ -98,22 +122,28 @@ class App(customtkinter.CTk):
         Create widget window
         """
         # Create frames
-        self.west_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (175 / self.WIDTH), height=self.HEIGHT * (430 / self.HEIGHT), corner_radius=0)
+        self.west_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (175 / self.WIDTH),
+                                                 height=self.HEIGHT * (430 / self.HEIGHT), corner_radius=0)
         self.west_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5), rowspan=4)
-        
-        self.north_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (350 / self.WIDTH), height=self.HEIGHT * (100 / self.HEIGHT), corner_radius=8)
+
+        self.north_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (350 / self.WIDTH),
+                                                  height=self.HEIGHT * (100 / self.HEIGHT), corner_radius=8)
         self.north_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=(5, 0))
 
-        self.center_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (350 / self.WIDTH), height=self.HEIGHT * (200 / self.HEIGHT), corner_radius=8)
+        self.center_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (350 / self.WIDTH),
+                                                   height=self.HEIGHT * (200 / self.HEIGHT), corner_radius=8)
         self.center_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
 
-        self.south_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (350 / self.WIDTH), height=self.HEIGHT * (100 / self.HEIGHT), corner_radius=8)
+        self.south_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (350 / self.WIDTH),
+                                                  height=self.HEIGHT * (100 / self.HEIGHT), corner_radius=8)
         self.south_frame.grid(row=2, column=1, sticky="nsew", padx=10, pady=(0, 5))
 
-        self.interface_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (195 / self.WIDTH), height=self.HEIGHT * (100 / self.HEIGHT), corner_radius=8)
+        self.interface_frame = customtkinter.CTkFrame(master=self, width=self.WIDTH * (195 / self.WIDTH),
+                                                      height=self.HEIGHT * (100 / self.HEIGHT), corner_radius=8)
         self.interface_frame.grid(row=0, column=2, sticky="nsew", padx=(5, 0), pady=(5, 0))
 
-        self.east_frame = customtkinter.CTkTabview(master=self, width=self.WIDTH * (195 / self.WIDTH), height=self.HEIGHT * (100 / self.HEIGHT), corner_radius=8)
+        self.east_frame = customtkinter.CTkTabview(master=self, width=self.WIDTH * (195 / self.WIDTH),
+                                                   height=self.HEIGHT * (100 / self.HEIGHT), corner_radius=8)
         self.east_frame.grid(row=1, column=2, sticky="nsew", padx=(5, 0), pady=(0, 5), rowspan=3)
         self.east_frame.add("Imported")
         self.east_frame.add("Export")
@@ -122,65 +152,64 @@ class App(customtkinter.CTk):
 
         # Buttons
         self.shuffle_button = customtkinter.CTkButton(
-            master=self.interface_frame, 
+            master=self.interface_frame,
             image=self.imageCache.get("shuffle"),
             command=lambda: self.shuffle(),
-            text="", 
-            width=5, 
-            height=5, 
-            fg_color='transparent', 
-            hover_color=self.interface_frame.cget("bg_color"), 
+            text="",
+            width=5,
+            height=5,
+            fg_color='transparent',
+            hover_color=self.interface_frame.cget("bg_color"),
             corner_radius=8
         )
 
         self.loop_button = customtkinter.CTkButton(
-            master=self.interface_frame, 
-            image=self.imageCache.get("loop-off"), 
-            command=lambda: self.loopEvent(), 
-            text="", 
-            width=5, 
-            height=5, 
-            fg_color='transparent', 
-            hover_color=self.interface_frame.cget("bg_color"), 
+            master=self.interface_frame,
+            image=self.imageCache.get("loop-off"),
+            command=lambda: self.loopEvent(),
+            text="",
+            width=5,
+            height=5,
+            fg_color='transparent',
+            hover_color=self.interface_frame.cget("bg_color"),
             corner_radius=8
         )
 
-
         self.next_button = customtkinter.CTkButton(
-            master=self.interface_frame, 
-            image=self.imageCache.get("skip-forward"), 
+            master=self.interface_frame,
+            image=self.imageCache.get("skip-forward"),
             command=lambda: self.next_song(),
-            text="", 
-            width=5, 
-            height=5, 
-            fg_color='transparent', 
-            hover_color=self.interface_frame.cget("bg_color"), 
+            text="",
+            width=5,
+            height=5,
+            fg_color='transparent',
+            hover_color=self.interface_frame.cget("bg_color"),
             corner_radius=8,
             state=tkinter.DISABLED
         )
 
         self.previous_button = customtkinter.CTkButton(
-            master=self.interface_frame, 
-            image=self.imageCache.get("skip-back"), 
+            master=self.interface_frame,
+            image=self.imageCache.get("skip-back"),
             command=lambda: self.previous_song(),
-            text="", 
-            width=5, 
-            height=5, 
-            fg_color='transparent', 
-            hover_color=self.interface_frame.cget("bg_color"), 
+            text="",
+            width=5,
+            height=5,
+            fg_color='transparent',
+            hover_color=self.interface_frame.cget("bg_color"),
             corner_radius=8,
             state=tkinter.DISABLED
         )
 
         self.playpause_button = customtkinter.CTkButton(
-            master=self.interface_frame, 
-            image=self.imageCache.get("paused"), 
+            master=self.interface_frame,
+            image=self.imageCache.get("paused"),
             command=lambda: self.playpause(),
-            text="", 
-            width=5, 
-            height=5, 
-            fg_color='transparent', 
-            hover_color=self. interface_frame.cget("bg_color"), 
+            text="",
+            width=5,
+            height=5,
+            fg_color='transparent',
+            hover_color=self.interface_frame.cget("bg_color"),
             corner_radius=8,
             state=tkinter.DISABLED
         )
@@ -195,19 +224,20 @@ class App(customtkinter.CTk):
         # Right (East) Frame
         self.search_entry = customtkinter.CTkEntry(
             master=self.east_frame.tab("Imported"),
-            width=150, 
-            height=25, 
+            width=150,
+            height=25,
             placeholder_text="Search for audio"
         )
         self.search_entry.place(relx=0.5, rely=0.05, anchor=tkinter.CENTER)
+        self.search_entry.bind("<Return>", lambda x: self.search_song())
 
         self.listframe = customtkinter.CTkFrame(
-            master=self.east_frame.tab("Imported"), 
-            width=150,  
-            height=175, 
+            master=self.east_frame.tab("Imported"),
+            width=150,
+            height=175,
             corner_radius=8
         )
-        self.listframe.place(relx=0.5, rely=0.45, anchor=tkinter.CENTER) 
+        self.listframe.place(relx=0.5, rely=0.45, anchor=tkinter.CENTER)
 
         self.song_box = customtkinter.CTkTextbox(
             master=self.listframe,
@@ -217,46 +247,100 @@ class App(customtkinter.CTk):
             fg_color='transparent',
             corner_radius=8
         )
-        self.song_box.place(relx=0.5, rely=0.45, anchor=tkinter.CENTER) 
+        self.song_box.place(relx=0.5, rely=0.45, anchor=tkinter.CENTER)
 
         self.index_entry = customtkinter.CTkEntry(
             master=self.east_frame.tab("Imported"),
             width=150,
-            height=25, 
+            height=25,
             placeholder_text="Enter index of audio"
         )
         self.index_entry.place(relx=0.5, rely=0.85, anchor=tkinter.CENTER)
 
         self.playbutton = customtkinter.CTkButton(
-            master=self.east_frame.tab("Imported"), 
-            text="Play", 
-            width=150, 
+            master=self.east_frame.tab("Imported"),
+            text="Play",
+            width=150,
             height=25,
-            command=lambda: self.play_search(self.index_entry.get())
+            command=lambda: self.play_search_song()
         )
         self.playbutton.place(relx=0.5, rely=0.95, anchor=tkinter.CENTER)
-     #WEST FRAME
+        # WEST FRAME
         self.logolabel = customtkinter.CTkLabel(
             master=self.west_frame, text=f" MP3_PROMAX{version}", font=(self.FONT, -16)
         )
         self.logolabel.place(relx=0.5, rely=0.12, anchor=tkinter.CENTER)
 
-     #SOUTH FRAME
+        self.themelabel = customtkinter.CTkLabel(master=self.west_frame, text="Appearance Mode:")
+        self.themelabel.place(relx=0.5, rely=0.7, anchor=tkinter.CENTER)
+
+        self.thememenu = customtkinter.CTkOptionMenu(
+            master=self.west_frame,
+            values=["System", "Dark", "Light"],
+            command=lambda x: AudioEngine.change_theme(x)
+        )
+        self.thememenu.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
+
+        # setting button
+        self.settings_button = customtkinter.CTkButton(
+            master=self.west_frame,
+            font=(self.FONT, -12),
+            text="",
+            image=self.imageCache.get("settings"),
+            bg_color='transparent',
+            fg_color='transparent',
+            hover_color=self.west_frame.cget("bg_color"),
+            width=5,
+            height=5,
+            command=lambda: self.draw_settings_frame(),
+        )
+        self.settings_button.place(relx=0.3, rely=0.9, anchor=tkinter.CENTER)
+        # github link
+        self.github_button = customtkinter.CTkButton(
+            master=self.west_frame,
+            font=(self.FONT, -12),
+            text="",
+            image=self.imageCache["github"],
+            bg_color='transparent',
+            fg_color='transparent',
+            hover_color=self.west_frame.cget("bg_color"),
+            width=5,
+            height=5,
+            command=lambda: webbrowser.open("https://github.com/finnzxje/mp3-player-python", new=2),
+        )
+        self.github_button.place(relx=0.5, rely=0.9, anchor=tkinter.CENTER)
+
+        self.mute_button = customtkinter.CTkButton(
+            master=self.west_frame,
+            font=(self.FONT, -12),
+            text="",
+            image=self.imageCache.get("unmute"),
+            bg_color='transparent',
+            fg_color='transparent',
+            hover_color=self.west_frame.cget("bg_color"),
+            width=5,
+            height=5,
+            corner_radius=16,
+            command=lambda: self.muteEvent(),
+        )
+        self.mute_button.place(relx=0.7, rely=0.9, anchor=tkinter.CENTER)
+
+        # SOUTH FRAME
         self.import_button = customtkinter.CTkButton(
-            master = self.south_frame,
-            command= lambda : self.import_files() ,
+            master=self.south_frame,
+            command=lambda: self.import_files(),
             image=self.imageCache.get("import"),
             fg_color='transparent',
             hover_color=self.south_frame.cget("bg_color"),
             text="Import Song(s)",
-            font= (self.FONT, -14),
+            font=(self.FONT, -14),
             width=240,
             height=50,
             text_color=self.logolabel.cget("text_color")
         )
         self.import_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
-        #NORTH FRAME
+        # NORTH FRAME
         self.songlabel = customtkinter.CTkButton(
             master=self.north_frame,
             text=f"Play Something!",
@@ -285,6 +369,68 @@ class App(customtkinter.CTk):
             master=self.north_frame, text="0:00", font=(self.FONT, -12), width=5
         )
         self.progress_label_right.place(relx=0.9, rely=0.7, anchor=tkinter.CENTER)
+
+        # CREATE SONG VOLUME
+        self.song_volume = customtkinter.CTkSlider(master=self.center_frame,
+                                                   width=225, height=15, from_=0, to=100,
+                                                   number_of_steps=100, command=lambda x: self.call_volume(x),
+                                                   progress_color="#1DB954",
+                                                   fg_color="#333333",
+                                                   )
+        self.song_volume.place(relx=0.57, rely=0.8, anchor=tkinter.CENTER)
+        self.song_volume_left = customtkinter.CTkLabel(
+            master=self.center_frame, text="Volume ", font=(self.FONT, -12), width=5
+        )
+        self.song_volume_left.place(relx=0.15, rely=0.8, anchor=tkinter.CENTER)
+
+        self.song_volume_left_top = customtkinter.CTkLabel(
+            master=self.center_frame, text="Min", font=(self.FONT, -12), width=5
+        )
+        self.song_volume_left_top.place(relx=0.3, rely=0.7, anchor=tkinter.CENTER)
+
+        self.song_volume_right_top = customtkinter.CTkLabel(
+            master=self.center_frame, text="Max", font=(self.FONT, -12), width=5
+        )
+        self.song_volume_right_top.place(relx=0.84, rely=0.7, anchor=tkinter.CENTER)
+
+    def play_search_song(self):
+        """
+        Check whether to run Search Audio or Enter Index
+        """
+        if self.found == True:
+            self.found = False
+            index = str(self.index_search + 1)
+        else:
+            index = str(self.index_entry.get())
+        self.play_search(str(index))
+
+    def search_song(self):
+        """
+       Search for songs in playlists. If the search keyword is empty, display the entire song list again.
+        """
+        self.found = False
+        search_term = self.search_entry.get().strip().lower()
+        self.song_box.delete("1.0", tkinter.END)
+
+        if not search_term:
+            self.update_song_box()
+            return
+
+        for index, song in enumerate(self.music_player.get_all_tracks()):
+            if search_term in song.title.lower():
+                self.index_search = index
+                self.song_box.insert(tkinter.END, f"{index + 1}. {song.title}\n")
+                self.found = True
+
+        if not self.found:
+            self.song_box.insert(tkinter.END, "Không tìm thấy bài hát.\n")
+
+    def call_volume(self, value):
+        """
+        Call volume
+        """
+        self.music_player.set_volume(float(value) / 100)
+
     def import_files(self):
         """
         Import file(s) from local machine
@@ -311,17 +457,32 @@ class App(customtkinter.CTk):
         self.update_song_box()
         self.play_search("1")
 
-    def loopEvent(self) ->None : 
+    def loopEvent(self) -> None:
 
         """
         Set the Loop state 
         """
-        if self.loop == True : 
+        if self.loop == True:
             self.loop = False
-            self.loop_button.configure(state = "normal" , image = self.imageCache["loop"])
-        else : 
-            self.loop = True 
-            self.loop_button.configure(state ="normal" , image = self.imageCache["loop-off"])
+            self.loop_button.configure(state="normal", image=self.imageCache["loop"])
+        else:
+            self.loop = True
+            self.loop_button.configure(state="normal", image=self.imageCache["loop-off"])
+
+    def muteEvent(self) -> None:
+        """
+             Set the mute button state
+         """
+        if self.mute:
+            # if mute -> unmute
+            self.mute = False
+            self.mute_button.configure(state="normal", image=self.imageCache["unmute"])
+        else:
+            # if not mute -> mute
+            self.mute = True
+
+            self.mute_button.configure(state="normal", image=self.imageCache["mute"])
+            self.loop_button.configure(state="normal", image=self.imageCache["loop"])
 
     def play_search(self, index_label: str) -> None:
         """
@@ -347,15 +508,15 @@ class App(customtkinter.CTk):
             print(traceback.format_exc())
         self.playbutton.configure(state=tkinter.NORMAL)
 
+    def raise_above_all(self, window: customtkinter.CTkToplevel) -> None:
+        """r
+        Raises a window above all other window
+        Args:
+            window (tkinter.Tk): The window to raise
+        """
+        window.attributes("-topmost", 1)
+        window.attributes("-topmost", 0)
 
-    def raise_above_all(self, window:customtkinter.CTkToplevel) -> None:
-            """r
-            Raises a window above all other window 
-            Args:
-                window (tkinter.Tk): The window to raise
-            """
-            window.attributes("-topmost", 1)
-            window.attributes("-topmost", 0)
     def playpause(self) -> None:
         """
         Play or pause
@@ -386,6 +547,49 @@ class App(customtkinter.CTk):
         previous_song_index = (self.music_player.index - 1) % len(self.music_player.playlist.tracks)
         self.play_search(str(previous_song_index + 1))
 
+    def draw_settings_frame(self) -> None:
+        """
+        Draws the settings frame.
+        """
+        self.settings_window = customtkinter.CTkFrame(
+            master=self, width=self.WIDTH * (755 / self.WIDTH), height=self.HEIGHT * (430 / self.HEIGHT),
+            corner_radius=0
+        )
+        self.settings_window.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
+
+        self.settings_frame = customtkinter.CTkFrame(
+            master=self.settings_window, width=350, height=380, corner_radius=10
+        )
+        self.settings_frame.place(relx=0.25, rely=0.47, anchor=tkinter.CENTER)
+
+        self.setting_header = customtkinter.CTkLabel(
+            master=self.settings_frame, text="Settings", font=(self.FONT, -18)
+        )
+        self.setting_header.place(relx=0.5, rely=0.1, anchor=tkinter.CENTER)
+
+        self.general_frame = customtkinter.CTkTabview(master=self.settings_frame, width=300, height=160)
+        self.general_frame.place(relx=0.5, rely=0.34, anchor=tkinter.CENTER)
+
+        self.general_frame.add("General")
+        self.general_header = customtkinter.CTkLabel(
+            master=self.general_frame.tab("General"), text="General", font=(self.FONT, -16)
+        )
+        self.general_header.place(relx=0.2, rely=0.15, anchor=tkinter.CENTER)
+
+        self.autoplay_box = customtkinter.CTkSwitch(
+            master=self.general_frame.tab("General"),
+            text="Autoplay",
+            font=(self.FONT, -12),
+            command=lambda: autoplay_event(),
+            width=50,
+        )
+        self.autoplay_box.place(relx=0.28, rely=0.4, anchor=tkinter.CENTER)
+        if self.getSetting('autoplay') == 'true':
+            self.autoplay_box.select()
+
+        def autoplay_event() -> None:
+            pass
+
     def slider_event(self, value):
         """
         Update the song according to the progress bar
@@ -414,7 +618,8 @@ class App(customtkinter.CTk):
         """
         if self.music_player.is_ended():
             self.progressbar.set(100)
-            self.progress_label_left.configure(text=f"{int(self.music_player.get_duration() / 60):02d}:{int(self.music_player.get_duration() % 60):02d}")
+            self.progress_label_left.configure(
+                text=f"{int(self.music_player.get_duration() / 60):02d}:{int(self.music_player.get_duration() % 60):02d}")
         else:
             curr_time = self.music_player.get_position() / 1000
             progress = curr_time / self.music_player.get_duration()
@@ -425,6 +630,35 @@ class App(customtkinter.CTk):
 
     def draw_lyrics_box(self):
         pass
+
+        self.setting_header = customtkinter.CTkLabel(
+            master=self.settings_frame, text="Settings", font=(self.FONT, -18)
+        )
+        self.setting_header.place(relx=0.5, rely=0.1, anchor=tkinter.CENTER)
+
+        self.general_frame = customtkinter.CTkTabview(master=self.settings_frame, width=300, height=160)
+        self.general_frame.place(relx=0.5, rely=0.34, anchor=tkinter.CENTER)
+
+        self.general_frame.add("General")
+        self.general_header = customtkinter.CTkLabel(
+            master=self.general_frame.tab("General"), text="General", font=(self.FONT, -16)
+        )
+        self.general_header.place(relx=0.2, rely=0.15, anchor=tkinter.CENTER)
+
+        self.autoplay_box = customtkinter.CTkSwitch(
+            master=self.general_frame.tab("General"),
+            text="Autoplay",
+            font=(self.FONT, -12),
+            command=lambda: autoplay_event(),
+            width=50,
+        )
+        self.autoplay_box.place(relx=0.28, rely=0.4, anchor=tkinter.CENTER)
+        if self.getSetting('autoplay') == 'true':
+            self.autoplay_box.select()
+
+        def autoplay_event() -> None:
+            pass
+
 
 if __name__ == "__main__":
     app = App()

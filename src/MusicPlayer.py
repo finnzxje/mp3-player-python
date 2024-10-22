@@ -157,6 +157,10 @@ class MusicPlayer:
         return self.playlist.get_track(self.index).get_duration()
 
     def is_ended(self):
+        """
+        Check if the song is over yet
+        :return:
+        """
         if self.audio_engine.get_position() < 0:
             self.current_position = 0
             return True
