@@ -41,7 +41,8 @@ class App(customtkinter.CTk):
         self.maxsize(755, 430)
         self.found = False
         self.index_search = None
-
+        self.mute = False
+        self.autoplay = False
         self.imageCache = {
             # Add your images here
            "empty": customtkinter.CTkImage(Image.open(os.path.join("Assets", "UIAssets", "empty.png")), size=(1, 1)),
@@ -490,8 +491,7 @@ class App(customtkinter.CTk):
             self.songlabel.configure(text=self.music_player.get_all_tracks()[int(index_label) - 1].title)
             self.music_player.play_at_index(int(index_label) - 1)
             self.playpause_button.configure(state="NORMAL", image=self.imageCache["playing"])
-            self.next_button.configure(state="NORMAL")
-            self.previous_button.configure(state="NORMAL")
+            self.update_UI()
 
         except Exception as e:
             print(traceback.format_exc())
@@ -534,12 +534,14 @@ class App(customtkinter.CTk):
         """
         previous_song_index = (self.music_player.index - 1) % len(self.music_player.playlist.tracks)
         self.play_search(str(previous_song_index + 1))
+
     def draw_settings_frame(self) -> None:
         """
         Draws the settings frame.
         """
         self.settings_window = customtkinter.CTkFrame(
-            master=self, width=self.WIDTH * (755 / self.WIDTH), height=self.HEIGHT * (430 / self.HEIGHT), corner_radius=0
+            master=self, width=self.WIDTH * (755 / self.WIDTH), height=self.HEIGHT * (430 / self.HEIGHT),
+            corner_radius=0
         )
         self.settings_window.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
@@ -547,6 +549,34 @@ class App(customtkinter.CTk):
             master=self.settings_window, width=350, height=380, corner_radius=10
         )
         self.settings_frame.place(relx=0.25, rely=0.47, anchor=tkinter.CENTER)
+
+        self.setting_header = customtkinter.CTkLabel(
+            master=self.settings_frame, text="Settings", font=(self.FONT, -18)
+        )
+        self.setting_header.place(relx=0.5, rely=0.1, anchor=tkinter.CENTER)
+
+        self.general_frame = customtkinter.CTkTabview(master=self.settings_frame, width=300, height=160)
+        self.general_frame.place(relx=0.5, rely=0.34, anchor=tkinter.CENTER)
+
+        self.general_frame.add("General")
+        self.general_header = customtkinter.CTkLabel(
+            master=self.general_frame.tab("General"), text="General", font=(self.FONT, -16)
+        )
+        self.general_header.place(relx=0.2, rely=0.15, anchor=tkinter.CENTER)
+
+        self.autoplay_box = customtkinter.CTkSwitch(
+            master=self.general_frame.tab("General"),
+            text="Autoplay",
+            font=(self.FONT, -12),
+            command=lambda: autoplay_event(),
+            width=50,
+        )
+        self.autoplay_box.place(relx=0.28, rely=0.4, anchor=tkinter.CENTER)
+        if self.getSetting('autoplay') == 'true':
+            self.autoplay_box.select()
+
+        def autoplay_event() -> None:
+            pass
 
     def slider_event(self, value):
         """
