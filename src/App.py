@@ -24,8 +24,7 @@ class App(customtkinter.CTk):
     """
 
     def __init__(self) -> None:
-        """
-        Initialize the App class
+        """        Initialize the App class
         """
 
         self.music_player = MusicPlayer()

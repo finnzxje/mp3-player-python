@@ -20,6 +20,8 @@ class Track:
         Get metadata from MP3 file and return it as a dictionary
         """
         audio = MP3(self.file_path)
+        self.duration = audio.info.length
+
         try:
             id3 = EasyID3(self.file_path)
 
@@ -33,8 +35,6 @@ class Track:
                 "file_path": self.file_path
             }
 
-
-        self.duration = audio.info.length
 
         return {
             "title": self.title,
@@ -62,9 +62,10 @@ class Track:
         """
         return self.title
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     """"
     Test the Track class with local file path
     """
-    test = Track("C:\\Users\\LENOVO\\Desktop\\TEFLON DON.mp3")
-    print(test.get_metadata())
+    test = Track("C:\\Users\\minh2\\OneDrive\\Desktop\\python beginner project (mini)\\audio\\get-up-on-your-feet-204255.mp3")
+    print(test.get_duration())
+    print ("eh")
