@@ -813,7 +813,6 @@ class App(customtkinter.CTk):
         :return:
         """
         if self.loop:
-            print("called")
             self.reset_progress_bar()
             self.play_search(str(self.music_player.index + 1))
         elif self.autoplay:
