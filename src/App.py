@@ -5,10 +5,11 @@ import customtkinter
 import tkinter
 import traceback
 import webbrowser
-import pygame
 from tkinter import filedialog
 from PIL import Image
 import psutil
+from torch.distributed.elastic.timer import configure
+
 from __version__ import __version__ as version
 from MusicPlayer import MusicPlayer
 from AudioEngine import AudioEngine
@@ -43,6 +44,9 @@ class App(customtkinter.CTk):
         self.index_search = None
         self.mute = False
         self.autoplay = False
+        self.remove_track = None
+        self.found_remove = False
+
         self.imageCache = {
             # Add your images here
             "empty": customtkinter.CTkImage(Image.open(os.path.join("Assets", "UIAssets", "empty.png")), size=(1, 1)),
@@ -93,13 +97,49 @@ class App(customtkinter.CTk):
             "unmute": customtkinter.CTkImage(dark_image=Image.open("./Assets/UIAssets/unmute-light.png"),
                                              light_image=Image.open("./Assets/UIAssets/unmute-black.png"),
                                              size=(25, 25)),
+            "volume-muted": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume1.png")),
+                size=(250, 100)
+            ),
+            "volume-muteda": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume1a.png")),
+                size=(250, 100)
+            ),
+            "volume-low": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume2.png")),
+                size=(250, 100)
+            ),
+            "volume-lowa": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume2a.png")),
+                size=(250, 100)
+            ),
+            "volume-medium": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume3.png")),
+                size=(250, 100)
+            ),
+            "volume-mediuma": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume3a.png")),
+                size=(250, 100)
+            ),
+            "volume-high": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume4.png")),
+                size=(250, 100)
+            ),
+            "volume-higha": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume4a.png")),
+                size=(250, 100)
+            ),
+            "vol10": customtkinter.CTkImage(
+                Image.open(os.path.join("Assets", "Player", "volume0.png")),
+                size=(250, 100)
+            ),
         }
         self.loop = False
         self.autoplay = True
         self.FONT = "Roboto Medium"
 
         self.createWidgets()
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # Free memory when closing 
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # Free memory when closing
 
     def on_closing(self):
         """Terminate child processes"""
@@ -231,6 +271,15 @@ class App(customtkinter.CTk):
         self.search_entry.place(relx=0.5, rely=0.05, anchor=tkinter.CENTER)
         self.search_entry.bind("<Return>", lambda x: self.search_song())
 
+        self.search_entry_remove = customtkinter.CTkEntry(
+            master=self.east_frame.tab("Export"),
+            width=150,
+            height=25,
+            placeholder_text="Search for audio"
+        )
+        self.search_entry_remove.place(relx=0.5, rely=0.05, anchor=tkinter.CENTER)
+        self.search_entry_remove.bind('<Return>', lambda event: self.search_song_remove())
+
         self.listframe = customtkinter.CTkFrame(
             master=self.east_frame.tab("Imported"),
             width=150,
@@ -238,6 +287,24 @@ class App(customtkinter.CTk):
             corner_radius=8
         )
         self.listframe.place(relx=0.5, rely=0.45, anchor=tkinter.CENTER)
+
+        self.listframe_remove = customtkinter.CTkFrame(
+            master= self.east_frame.tab("Export"),
+            width=150,
+            height=175,
+            corner_radius=8
+        )
+        self.listframe_remove.place(relx=0.5, rely=0.45, anchor=tkinter.CENTER)
+
+        self.song_box_remove = customtkinter.CTkTextbox(
+            master=self.listframe_remove,
+            width=140,
+            height=175,
+            bg_color='transparent',
+            fg_color='transparent',
+            corner_radius=8
+        )
+        self.song_box_remove.place(relx=0.5, rely=0.45, anchor=tkinter.CENTER)
 
         self.song_box = customtkinter.CTkTextbox(
             master=self.listframe,
@@ -265,6 +332,16 @@ class App(customtkinter.CTk):
             command=lambda: self.play_search_song()
         )
         self.playbutton.place(relx=0.5, rely=0.95, anchor=tkinter.CENTER)
+
+        # Create remove
+        self.removebutton = customtkinter.CTkButton(
+            master= self.east_frame.tab("Export"),
+            text="Remove",
+            width=150,
+            height=25,
+            command = lambda : self.delete_song()
+        )
+        self.removebutton.place(relx=0.5, rely=0.95, anchor=tkinter.CENTER)
         # WEST FRAME
         self.logolabel = customtkinter.CTkLabel(
             master=self.west_frame, text=f" MP3_PROMAX{version}", font=(self.FONT, -16)
@@ -372,16 +449,16 @@ class App(customtkinter.CTk):
 
         # CREATE SONG VOLUME
         self.song_volume = customtkinter.CTkSlider(master=self.center_frame,
-                                                   width=225, height=15, from_=0, to=100,
+                                                   width=225, height=20, from_=0, to=100,
                                                    number_of_steps=100, command=lambda x: self.call_volume(x),
                                                    progress_color="#1DB954",
                                                    fg_color="#333333",
                                                    )
-        self.song_volume.place(relx=0.57, rely=0.8, anchor=tkinter.CENTER)
+        self.song_volume.place(relx=0.57, rely=0.85, anchor=tkinter.CENTER)
         self.song_volume_left = customtkinter.CTkLabel(
             master=self.center_frame, text="Volume ", font=(self.FONT, -12), width=5
         )
-        self.song_volume_left.place(relx=0.15, rely=0.8, anchor=tkinter.CENTER)
+        self.song_volume_left.place(relx=0.15, rely=0.85, anchor=tkinter.CENTER)
 
         self.song_volume_left_top = customtkinter.CTkLabel(
             master=self.center_frame, text="Min", font=(self.FONT, -12), width=5
@@ -392,6 +469,23 @@ class App(customtkinter.CTk):
             master=self.center_frame, text="Max", font=(self.FONT, -12), width=5
         )
         self.song_volume_right_top.place(relx=0.84, rely=0.7, anchor=tkinter.CENTER)
+
+        # Now add the label to this frame
+        self.volume_meter = customtkinter.CTkLabel(master=self.center_frame, text='', image=self.imageCache["volume-lowa"])
+        self.volume_meter.place(relx=0.5, rely=0.3, anchor=tkinter.CENTER)
+
+    def delete_song(self):
+        if self.found_remove == False:
+            self.update_song_box()
+        else :
+            self.music_player.stop()
+
+            self.music_player.remove_from_playlist(self.remove_track)
+            self.music_player.remove_track()
+            self.song_box_remove.delete("1.0", tkinter.END)
+            self.song_box_remove.insert(tkinter.END, "The song has been successfully deleted.\n")
+            self.song_box_remove.insert(tkinter.END, "Please delete the search bar and press enter to update again\n")
+            self.reset_progress_bar()
 
     def play_search_song(self):
         """
@@ -423,13 +517,62 @@ class App(customtkinter.CTk):
                 self.found = True
 
         if not self.found:
-            self.song_box.insert(tkinter.END, "Không tìm thấy bài hát.\n")
+            self.song_box.insert(tkinter.END, "No song found.\n")
 
-    def call_volume(self, value):
+    def search_song_remove(self):
+        """
+       Search for songs in playlists. If the search keyword is empty, display the entire song list again.
+        """
+        self.found_remove = False
+        search_term = self.search_entry_remove.get().strip().lower()
+
+        if not search_term:
+            self.update_song_box()
+            return
+        self.song_box_remove.delete("1.0", tkinter.END)
+
+        for index, song in enumerate(self.music_player.get_all_tracks()):
+            if search_term in song.title.lower():
+                self.remove_track = song
+                self.song_box_remove.insert(tkinter.END, f"{index + 1}. {song.title}\n")
+                self.found_remove = True
+
+        if not self.found_remove:
+            self.song_box_remove.insert(tkinter.END, "No song found.\n")
+
+    def reset_progress_bar(self):
+        self.progressbar.configure(state=tkinter.DISABLED)
+        self.progressbar.after_cancel(self.loop_reset_progressbar)
+        self.progressbar.set(0)
+        self.progress_label_right.configure(text=f"00:00")
+        self.songlabel.configure(text=f"Play Something!")
+
+        self.progress_label_left.configure(text=f"00:00")
+
+    def call_volume(self, value ):
         """
         Call volume
         """
         self.music_player.set_volume(float(value) / 100)
+
+        if value == 0:
+            self.volume_meter.configure(image=self.imageCache.get("vol10"))
+        elif 0 < value <= 12:
+            self.volume_meter.configure(image=self.imageCache.get("volume-muted"))
+        elif 12 < value <= 24:
+            self.volume_meter.configure(image=self.imageCache.get("volume-muteda"))
+        elif 24 < value <= 36:
+            self.volume_meter.configure(image=self.imageCache.get("volume-low"))
+        elif 36 < value <= 48:
+            self.volume_meter.configure(image=self.imageCache.get("volume-lowa"))
+        elif 48 < value <= 60:
+            self.volume_meter.configure(image=self.imageCache.get("volume-medium"))
+        elif 60 < value <= 82:
+            self.volume_meter.configure(image=self.imageCache.get("volume-mediuma"))
+        elif 82 < value <= 94:
+            self.volume_meter.configure(image=self.imageCache.get("volume-high"))
+        else :
+            self.volume_meter.configure(image=self.imageCache.get("volume-higha"))
 
     def import_files(self):
         """
@@ -446,8 +589,10 @@ class App(customtkinter.CTk):
         :return:
         """
         self.song_box.delete("1.0", tkinter.END)
+        self.song_box_remove.delete("1.0", tkinter.END)
         for index, song in enumerate(self.music_player.get_all_tracks()):
             self.song_box.insert(tkinter.END, f"{index + 1}. {song}\n")
+            self.song_box_remove.insert(tkinter.END, f"{index + 1}. {song}\n")
 
     def shuffle(self):
         """
@@ -460,14 +605,16 @@ class App(customtkinter.CTk):
     def loopEvent(self) -> None:
 
         """
-        Set the Loop state 
+        Set the Loop state
         """
-        if self.loop == True:
-            self.loop = False
+        if self.loop == False:
             self.loop_button.configure(state="normal", image=self.imageCache["loop"])
-        else:
             self.loop = True
+            #self.music_player.on_loop()
+        else:
             self.loop_button.configure(state="normal", image=self.imageCache["loop-off"])
+            self.loop = False
+            self.music_player.play()
 
     def muteEvent(self) -> None:
         """
@@ -480,9 +627,8 @@ class App(customtkinter.CTk):
         else:
             # if not mute -> mute
             self.mute = True
-
             self.mute_button.configure(state="normal", image=self.imageCache["mute"])
-            self.loop_button.configure(state="normal", image=self.imageCache["loop"])
+        self.music_player.mute()
 
     def play_search(self, index_label: str) -> None:
         """
@@ -620,13 +766,15 @@ class App(customtkinter.CTk):
             self.progressbar.set(100)
             self.progress_label_left.configure(
                 text=f"{int(self.music_player.get_duration() / 60):02d}:{int(self.music_player.get_duration() % 60):02d}")
+            self.handle_ending()
+
         else:
             curr_time = self.music_player.get_position() / 1000
             progress = curr_time / self.music_player.get_duration()
             self.progressbar.set(int(progress * 100))
             self.progress_label_left.configure(
                 text=f"{int(curr_time / 60):02d}:{int(curr_time % 60):02d}")
-            self.progressbar.after(1000, self.update_progressbar)
+            self.loop_reset_progressbar = self.progressbar.after(1000, self.update_progressbar)
 
     def draw_lyrics_box(self):
         pass
@@ -658,6 +806,13 @@ class App(customtkinter.CTk):
 
         def autoplay_event() -> None:
             pass
+
+    def handle_ending(self):
+        if self.loop:
+            print("called")
+            self.reset_progress_bar()
+            self.play_search(str(self.music_player.index + 1))
+
 
 
 if __name__ == "__main__":
