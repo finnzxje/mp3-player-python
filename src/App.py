@@ -521,7 +521,7 @@ class App(customtkinter.CTk):
 
     def search_song_remove(self):
         """
-       Search for songs in playlists. If the search keyword is empty, display the entire song list again.
+       Search for songs in playlists
         """
         self.found_remove = False
         search_term = self.search_entry_remove.get().strip().lower()
@@ -805,14 +805,19 @@ class App(customtkinter.CTk):
             self.autoplay_box.select()
 
         def autoplay_event() -> None:
-            pass
+            self.autoplay = not self.autoplay
 
     def handle_ending(self):
+        """
+        Handles the ending of the music
+        :return:
+        """
         if self.loop:
             print("called")
             self.reset_progress_bar()
             self.play_search(str(self.music_player.index + 1))
-
+        elif self.autoplay:
+            self.play_search(str((self.music_player.index + 2) % len(self.music_player.playlist.tracks)))
 
 
 if __name__ == "__main__":

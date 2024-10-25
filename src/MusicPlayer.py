@@ -96,6 +96,9 @@ class MusicPlayer:
         """
         Shuffle the playlist
         """
+        if not self.playlist:
+            print("Playlist is empty")
+            return
         self.index = 0
         self.playlist.shuffle()
         self.current_track = self.playlist.tracks[self.index]
