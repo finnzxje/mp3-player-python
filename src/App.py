@@ -734,7 +734,7 @@ class App(customtkinter.CTk):
             self.autoplay_box.select()
 
         def autoplay_event() -> None:
-            pass
+            self.autoplay = not self.autoplay
 
     def slider_event(self, value):
         """
