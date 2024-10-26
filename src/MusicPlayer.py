@@ -1,8 +1,10 @@
+import json
 from Playlist import Playlist
 from AudioEngine import AudioEngine
 from Track import Track
 from tkinter import filedialog
 from tkinter import *
+
 
 
 class MusicPlayer:
@@ -166,6 +168,34 @@ class MusicPlayer:
             return True
         else:
             return False
+    def getSetting(self, setting:str) -> str:
+        """
+        Get the setting from the saved config file
+
+        Args:
+            setting (str): The setting to be retrieved
+        """
+        with open("config.json", "r") as f:
+            data = json.load(f)
+        return data[setting]
+    def save_setting(self, setting: str, value: str):
+        """
+            save setting to config.json
+        Args:
+            setting (str): name need to save of setting 
+            value (str): value need to save of setting 
+        """
+        try:
+            with open("config.json", "r") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            #if file not exist create new file
+            data = {}
+
+        data[setting] = value  # update value of setting 
+
+        with open("config.json", "w") as f:
+            json.dump(data, f, indent=4) 
 
 if __name__ == "__main__":
     """
