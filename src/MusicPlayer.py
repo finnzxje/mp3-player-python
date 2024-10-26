@@ -178,6 +178,10 @@ class MusicPlayer:
     def set_all_playlist(self):
         return self.playlist.tracks()
     
+
+    
+    #setting autoplay 
+    
     def get_setting(self, setting: str):
         """
         Lấy cài đặt từ file cấu hình JSON.
