@@ -20,8 +20,6 @@ class Track:
         Get metadata from MP3 file and return it as a dictionary
         """
         audio = MP3(self.file_path)
-        self.duration = audio.info.length
-
         try:
             id3 = EasyID3(self.file_path)
 
@@ -35,6 +33,8 @@ class Track:
                 "file_path": self.file_path
             }
 
+
+        self.duration = audio.info.length
 
         return {
             "title": self.title,

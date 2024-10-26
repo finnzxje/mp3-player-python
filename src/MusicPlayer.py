@@ -19,6 +19,11 @@ class MusicPlayer:
         self.current_position = 0
         self.index = 0
 
+    def remove_track(self):
+        self.current_position = 0
+        self.index = 0
+        self.current_track = None
+
     def add_track_from_files(self, file_paths):
         """
         Add tracks from files to the playlist
@@ -91,6 +96,9 @@ class MusicPlayer:
         """
         Shuffle the playlist
         """
+        if not self.playlist:
+            print("Playlist is empty")
+            return
         self.index = 0
         self.playlist.shuffle()
         self.current_track = self.playlist.tracks[self.index]
@@ -166,7 +174,8 @@ class MusicPlayer:
             return True
         else:
             return False
-
+    def set_all_playlist(self):
+        return self.playlist.tracks()
 if __name__ == "__main__":
     """
     Test the MusicPlayer class

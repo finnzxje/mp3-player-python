@@ -42,6 +42,11 @@ class Playlist:
         return len(self.tracks)
 
     def get_track(self, position):
+        """
+        Get the track at the given position
+        :param position:
+        :return:
+        """
         return self.tracks[position]
 
 
