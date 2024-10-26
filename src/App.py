@@ -696,7 +696,7 @@ class App(customtkinter.CTk):
 
     def toggle_autoplay(self):
         """
-        Hàm gọi khi chuyển đổi trạng thái của hộp Autoplay.
+        func change state of autoplay
         """
         if self.autoplay_box.get():
             messagebox.showinfo("MESSAGE", "Autoplay ON") #show message when on
@@ -706,7 +706,7 @@ class App(customtkinter.CTk):
 
         state = "Bật" if self.autoplay_box.get() else "Tắt"
         # save state to setting ( config.json)
-        self.music_player.save_setting('autoplay', 'true' if state == "Bật" else 'false')
+        self.musicsave_setting('autoplay', 'true' if state == "Bật" else 'false')
 
         
 
