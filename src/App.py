@@ -5,10 +5,11 @@ import customtkinter
 import tkinter
 import traceback
 import webbrowser
+from tkinter import messagebox
 from tkinter import filedialog
 from PIL import Image
 import psutil
-from torch.distributed.elastic.timer import configure
+# from torch.distributed.elastic.timer import configure
 
 from __version__ import __version__ as version
 from MusicPlayer import MusicPlayer
@@ -358,19 +359,20 @@ class App(customtkinter.CTk):
         self.thememenu.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
 
         # setting button
-        self.settings_button = customtkinter.CTkButton(
+        self.autoplay_box = customtkinter.CTkSwitch(
             master=self.west_frame,
-            font=(self.FONT, -12),
-            text="",
-            image=self.imageCache.get("settings"),
-            bg_color='transparent',
-            fg_color='transparent',
-            hover_color=self.west_frame.cget("bg_color"),
-            width=5,
-            height=5,
-            command=lambda: self.draw_settings_frame(),
+            command=self.toggle_autoplay, 
+            text="", 
+            width=50,
         )
-        self.settings_button.place(relx=0.3, rely=0.9, anchor=tkinter.CENTER)
+        self.autoplay_box.place(relx=0.3, rely=0.9, anchor=tkinter.CENTER)
+
+        if self.music_player.get_setting('autoplay') == 'true':
+            self.autoplay_box.select()
+        else:
+            self.autoplay_box.deselect()
+
+
         # github link
         self.github_button = customtkinter.CTkButton(
             master=self.west_frame,
@@ -692,48 +694,21 @@ class App(customtkinter.CTk):
         previous_song_index = (self.music_player.index - 1) % len(self.music_player.playlist.tracks)
         self.play_search(str(previous_song_index + 1))
 
-    def draw_settings_frame(self) -> None:
+    def toggle_autoplay(self):
         """
-        Draws the settings frame.
+        Hàm gọi khi chuyển đổi trạng thái của hộp Autoplay.
         """
-        self.settings_window = customtkinter.CTkFrame(
-            master=self, width=self.WIDTH * (755 / self.WIDTH), height=self.HEIGHT * (430 / self.HEIGHT),
-            corner_radius=0
-        )
-        self.settings_window.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
+        if self.autoplay_box.get():
+            messagebox.showinfo("MESSAGE", "Autoplay ON") #show message when on
+        else:
+            messagebox.showinfo("MESSAGE", "Autoplay OFF") #show message when off
+  
 
-        self.settings_frame = customtkinter.CTkFrame(
-            master=self.settings_window, width=350, height=380, corner_radius=10
-        )
-        self.settings_frame.place(relx=0.25, rely=0.47, anchor=tkinter.CENTER)
+        state = "Bật" if self.autoplay_box.get() else "Tắt"
+        # save state to setting ( config.json)
+        self.music_player.save_setting('autoplay', 'true' if state == "Bật" else 'false')
 
-        self.setting_header = customtkinter.CTkLabel(
-            master=self.settings_frame, text="Settings", font=(self.FONT, -18)
-        )
-        self.setting_header.place(relx=0.5, rely=0.1, anchor=tkinter.CENTER)
-
-        self.general_frame = customtkinter.CTkTabview(master=self.settings_frame, width=300, height=160)
-        self.general_frame.place(relx=0.5, rely=0.34, anchor=tkinter.CENTER)
-
-        self.general_frame.add("General")
-        self.general_header = customtkinter.CTkLabel(
-            master=self.general_frame.tab("General"), text="General", font=(self.FONT, -16)
-        )
-        self.general_header.place(relx=0.2, rely=0.15, anchor=tkinter.CENTER)
-
-        self.autoplay_box = customtkinter.CTkSwitch(
-            master=self.general_frame.tab("General"),
-            text="Autoplay",
-            font=(self.FONT, -12),
-            command=lambda: autoplay_event(),
-            width=50,
-        )
-        self.autoplay_box.place(relx=0.28, rely=0.4, anchor=tkinter.CENTER)
-        if self.getSetting('autoplay') == 'true':
-            self.autoplay_box.select()
-
-        def autoplay_event() -> None:
-            self.autoplay = not self.autoplay
+        
 
     def slider_event(self, value):
         """

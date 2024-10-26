@@ -4,6 +4,7 @@ from Track import Track
 from tkinter import filedialog
 from tkinter import *
 
+import json
 
 class MusicPlayer:
 
@@ -176,6 +177,42 @@ class MusicPlayer:
             return False
     def set_all_playlist(self):
         return self.playlist.tracks()
+    
+    def get_setting(self, setting: str):
+        """
+        Lấy cài đặt từ file cấu hình JSON.
+
+        Args:
+            setting (str): Tên cài đặt cần lấy.
+
+        Returns:
+            str: Giá trị của cài đặt, hoặc 'false' nếu không tìm thấy.
+        """
+        try:
+            with open("config.json", "r") as f:
+                data = json.load(f)
+            return data.get(setting, 'false')  
+        except FileNotFoundError:
+            return 'false'        
+    def save_setting(self, setting: str, value: str):
+        """
+        Lưu cài đặt vào file cấu hình JSON.
+
+        Args:
+            setting (str): Tên cài đặt cần lưu.
+            value (str): Giá trị của cài đặt cần lưu.
+        """
+        try:
+            with open("config.json", "r") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            data = {}
+
+        data[setting] = value  
+
+        with open("config.json", "w") as f:
+            json.dump(data, f, indent=4) 
+
 if __name__ == "__main__":
     """
     Test the MusicPlayer class
