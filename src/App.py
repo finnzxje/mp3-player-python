@@ -707,7 +707,6 @@ class App(customtkinter.CTk):
         state = "Bật" if self.autoplay_box.get() else "Tắt"
         # save state to setting ( config.json)
         self.music_player.save_setting('autoplay', 'true' if state == "Bật" else 'false')
-
         
 
     def slider_event(self, value):
