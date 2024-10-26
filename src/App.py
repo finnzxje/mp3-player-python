@@ -706,7 +706,7 @@ class App(customtkinter.CTk):
 
         state = "Bật" if self.autoplay_box.get() else "Tắt"
         # save state to setting ( config.json)
-        self.musicsave_setting('autoplay', 'true' if state == "Bật" else 'false')
+        self.music_player.save_setting('autoplay', 'true' if state == "Bật" else 'false')
 
         
 
