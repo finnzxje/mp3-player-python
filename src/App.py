@@ -703,7 +703,7 @@ class App(customtkinter.CTk):
         else:
             messagebox.showinfo("MESSAGE", "Autoplay OFF") #show message when off
   
-
+        self.autoplay_event()
         state = "Bật" if self.autoplay_box.get() else "Tắt"
         # save state to setting ( config.json)
         self.music_player.save_setting('autoplay', 'true' if state == "Bật" else 'false')
@@ -749,36 +749,11 @@ class App(customtkinter.CTk):
                 text=f"{int(curr_time / 60):02d}:{int(curr_time % 60):02d}")
             self.loop_reset_progressbar = self.progressbar.after(1000, self.update_progressbar)
 
+    def autoplay_event(self) -> None:
+        self.autoplay = not self.autoplay
+
     def draw_lyrics_box(self):
         pass
-
-        self.setting_header = customtkinter.CTkLabel(
-            master=self.settings_frame, text="Settings", font=(self.FONT, -18)
-        )
-        self.setting_header.place(relx=0.5, rely=0.1, anchor=tkinter.CENTER)
-
-        self.general_frame = customtkinter.CTkTabview(master=self.settings_frame, width=300, height=160)
-        self.general_frame.place(relx=0.5, rely=0.34, anchor=tkinter.CENTER)
-
-        self.general_frame.add("General")
-        self.general_header = customtkinter.CTkLabel(
-            master=self.general_frame.tab("General"), text="General", font=(self.FONT, -16)
-        )
-        self.general_header.place(relx=0.2, rely=0.15, anchor=tkinter.CENTER)
-
-        self.autoplay_box = customtkinter.CTkSwitch(
-            master=self.general_frame.tab("General"),
-            text="Autoplay",
-            font=(self.FONT, -12),
-            command=lambda: autoplay_event(),
-            width=50,
-        )
-        self.autoplay_box.place(relx=0.28, rely=0.4, anchor=tkinter.CENTER)
-        if self.getSetting('autoplay') == 'true':
-            self.autoplay_box.select()
-
-        def autoplay_event() -> None:
-            self.autoplay = not self.autoplay
 
     def handle_ending(self):
         """
