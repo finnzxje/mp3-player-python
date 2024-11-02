@@ -704,6 +704,7 @@ class App(customtkinter.CTk):
         Update the song according to the progress bar
         :return:
         """
+        self.playpause_button.configure(state="NORMAL", image=self.imageCache["playing"])
         seconds = value / 100 * self.music_player.get_duration()
         self.music_player.seek(seconds)
         self.update_UI()
