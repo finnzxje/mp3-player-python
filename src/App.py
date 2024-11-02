@@ -705,6 +705,7 @@ class App(customtkinter.CTk):
         :return:
         """
         self.playpause_button.configure(state="NORMAL", image=self.imageCache["playing"])
+        self.music_player.is_playing = True
         seconds = value / 100 * self.music_player.get_duration()
         self.music_player.seek(seconds)
         self.update_UI()
