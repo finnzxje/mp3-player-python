@@ -9,8 +9,6 @@ from tkinter import messagebox
 from tkinter import filedialog
 from PIL import Image
 import psutil
-# from torch.distributed.elastic.timer import configure
-
 from __version__ import __version__ as version
 from MusicPlayer import MusicPlayer
 from AudioEngine import AudioEngine
@@ -655,14 +653,6 @@ class App(customtkinter.CTk):
             print(traceback.format_exc())
         self.playbutton.configure(state=tkinter.NORMAL)
 
-    def raise_above_all(self, window: customtkinter.CTkToplevel) -> None:
-        """r
-        Raises a window above all other window
-        Args:
-            window (tkinter.Tk): The window to raise
-        """
-        window.attributes("-topmost", 1)
-        window.attributes("-topmost", 0)
 
     def playpause(self) -> None:
         """
